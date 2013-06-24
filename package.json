@@ -1,0 +1,19 @@
+{
+  "name": "lakefile",
+  "version": "0.0.1",
+  "description": "Generate makefiles with Livescript",
+  "main": "index.js",
+  "dependencies": {
+    "LiveScript": "~1.1.1",
+    "moment": "~1.7.2",
+    "underscore": "~1.4.3",
+    "underscore.string": "~2.3.1",
+    "ansi-color": "~0.2.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Vittorio Zaccaria",
+  "license": "BSD"
+}
