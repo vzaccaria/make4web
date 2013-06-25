@@ -4,6 +4,7 @@ _                = require('underscore')
 _.str            = require('underscore.string');
 color            = require("ansi-color").set
 moment           = require('moment')
+{filter, map}    = require 'prelude-ls'
 
 
 # Useful functions to print
@@ -83,14 +84,13 @@ le = "\n\t"
 
 targets = [
     { category: 'common', targets: [
-        { name: \deploy,    description: "complete, create build dir, build and install; eventually install assets"}
+        { name: \deploy,    description: "(default). Complete deal, create directories, build and install; eventually install assets"}
         { name: \build,     description: "compile all files into build directory" }
-        { name: \install,   description: "compile all files and install them in deploy, no assets installed"}
         ]
     }
     {
         category: 'continuous build', targets: [
-            { name: "start-cb", description: "starts continuous build"}
+            { name: "server",   description: "starts continuous build"}
             { name: "stop-cb",  description: "stops continuous build"}
         ]
     }
@@ -179,37 +179,109 @@ reduce-to = (name, list) ->
     
 now = -> moment().format('MMMM Do YYYY, h:mm:ss a');
 
-reset-targets = ->
-   ft = ""
+reset-targets = ~>
+   @ft = ""
    
-add-to-targets = (x) ->
-    ft = "#ft #x"
-    
-collect-targets = ({from-source-list, into-target-variable, into-file, final-type}) ->
-  
-       if from-source-list?
-           tv = 
-            |  into-target-variable? => makeify into-target-variable
-            |  otherwise             => into-file
-            
-           str = tv
-            
-           for src in from-source-list 
-            
-                if src.name? 
-                    str = str + ct +
-                         src.name |> take-name |> change-type(l.type, final-type) |> rebase-to(build-dir)
-                         
-                if src.files-of-type?
-                    str = str + ct + all(files-of-type: src.files-of-type, in: src.in) 
-                        |> change-type( src.files-of-type, final-type) 
-                        |> take-name 
-                        |> rebase-to(build-dir)
-                         
-           add-to-targets tv 
+add-to-targets = (x) ~>
+   @ft = "#{@ft} #x"
 
+get-targets = ~>
+   @ft
+   
 o = (x) ->
     console.log x
+    
+m = (x) ->
+    o echo-step "#{_.str.humanize(x)}"
+
+x = (y) ->
+    o "\t #y"
+
+p = (z) ->
+    if not z?
+        o ""
+    else 
+        o "\n\# #{_.str.humanize(z)}"
+
+it = (description, {with-target, dependencies, not-phony}, cb) ->
+    
+    p "#description"
+    if not not-phony?
+        o ".PHONY: #{with-target}"
+    o "#{with-target}: #{dependencies |> pretty}"
+    m "#description"
+    cb()
+    
+foreach-file-in = (variable-name, cb) ->
+    o   """
+        \t for i in #{getvar variable-name}; do \\
+        \t\t #{cb('$$i')}; \\
+        \t done 
+        """ 
+
+foreach-file-in-expression = (expression, cb) ->
+    o   """
+        \t for i in #{expression}; do \\
+        \t\t #{cb('$$i')}; \\
+        \t done 
+        """ 
+   
+collect-targets = ({build-dir, from-source-list, into-target-variable, into-file, final-type, description}) ->
+  
+       if from-source-list?
+        
+           if description? then p description
+           else p ""
+           
+           str = "#{makeify into-target-variable}="
+            
+           for src in from-source-list 
+                if src.name? 
+                    src.dst-name    = src.name |> take-name |> change-type(src.type, final-type)
+                    src.watch-name  = src.name 
+                    src.dir-name    = src.name |> take-dir
+                         
+                if src.files-of-type?
+                    src.dst-name    = (all(files-of-type: src.files-of-type, in: src.in) |> change-type( src.files-of-type, final-type) |> take-name)
+                    src.watch-name  = (src.in)
+                    src.dir-name    = (src.in)
+                
+                src.build-name  = src.dst-name  |> rebase-to(build-dir)
+                str             = str + ct + src.build-name
+                        
+           if not into-file? 
+                add-to-targets(getvar into-target-variable)
+           else
+                add-to-targets into-file 
+                
+           o str
+           
+           if into-file? 
+                join-targets from-variable: into-target-variable, into-file: into-file
+           
+join-targets = ({from-variable, into-file, original-source-list}) ->
+   
+            it "merges file list into #{into-file}", {with-target: into-file, dependencies: getvar(from-variable), +not-phony} ->
+                o "\t cat $^ > $@"
+                
+           
+copy-targets = ({from-source-list, copy-into-dir}) ->
+    
+        if from-source-list?
+            for src in from-source-list
+                 
+                if src.name? 
+                    x "install -m 555 #{src.name} #{copy-into-dir}"
+                         
+                if src.files-of-type?
+                    foreach-file-in-expression all(files-of-type: src.files-of-type, in: src.in), (file) ->
+                       "install -m 555 #{file} #{copy-into-dir}" 
+
+install-variable = ( variable-name, final-directory ) ->
+    
+install-file = ( {name, derived-from-list, final-directory } ) ->
+    if derived-from-list?
+        x "install -m 555 #name #final-directory" 
     
 generate-makefile-config-ps = ({  
                                 build-dir:              _build-dir
@@ -226,313 +298,253 @@ generate-makefile-config-ps = ({
     
     o "\# Makefile generated automatically on #{now()}"
     o "\# (c) 2013 - Vittorio Zaccaria, all rights reserved"
-    o "\n\# Current variables: "
+    o "\n\# Current configuration: "
     
     for i in _.str.lines(JSON.stringify(path-system, null, 2))
         console.log "\# #i"
         
-    generate-makefile-config-ext(path-system,s)
+    generate-makefile-ext(path-system,s)
 
-    
-generate-makefile-ext = ( { build-dir, 
-                            deploy-dir, 
-                            server-dir, 
-                            client-dir,
-                            client-dir-img, 
-                            client-dir-fonts } , 
-                          { client-js:      cf,
-                            vendor-js:      vf, 
-                            server-js:      sf,
-                            client-css:     cs, 
-                            client-html:    ch,
-                            client-img:     im,
-                            client-fonts:   fo,
-                            silent:         sil,
-                            depth:          dp,                                            
-                            trigger-files:  trigger-files,
-                            additional-commands: additional-commands } ) --> 
-
-    
-    o '# main target'
-    o 'all: '
-    o '\t make deploy'
-    
-    # console.log "#{ht} main target"
-    # console.log "all: makefile"
-    # console.log "\t make deploy #{if sil? and sil then '--silent' else ''}"
-    
+task = ({with-name, step-list}) ->
    
-    collect-targets from-source-list: cf, into-file: "#build-dir/client.js", final-type: \js 
-    
-    collect-targets from-source-list: sf, into-target-variable: "#build-dir/client.js", final-type: \js 
- 
-  
-    if vf? 
-        console.log "#{ht} Vendor sources (javascript), client side"
-        console.log reduce-to "client vendor sources", 
-            [ l.name |> take-name |> change-type(l.type, \js)  |> rebase-to(build-dir) for l in vf]
-        ft = "#ft #build-dir/vendor.js"
-
-            
-    if cs?                                    
-        console.log "#{ht} Client sources (css)"
-        console.log reduce-to "client css sources", 
-            [ l.name |> take-name |> change-type(l.type, \css) |> rebase-to(build-dir) for l in cs]
-        ft = "#ft #build-dir/client.css"
-
+    task-name = with-name
+   
+    it "runs task #with-name", {with-target: task-name}, ->
+        for s in step-list 
+            x "make #s"
         
-    if ch?                                         
-        console.log "#{ht} Client html"
-        console.log reduce-to "client html", 
-            [ l.name |> take-name |> change-type(l.type, \html) |> rebase-to(build-dir) for l in ch]
-        ft = "#ft #{getvar('client html')}"
+        o ""
+
+pretty = (x) ->
+    if x? then x else ""
+
+
+add-hook = (phase, predicate, action) ~>
+    @hooks = []
+    @hooks.push {phase: phase, predicate: predicate, action: action}
+     
+   
+init-hooks-data = (cf, sf, vf, cs, ch, im, fo) ~>
+    @big-list-of-files = []
+    for l in [cf, sf, vf, cs, ch ]
+        @big-list-of-files = @big-list-of-files.concat(l)
     
-    less-include = ""  
-    if cs?
-        console.log "#{ht} Client dependencies (css)"
-        for l in cs
-            if l.deps?
-                build-name =  l.name |> take-name |> change-type(l.type, \css) |> rebase-to(build-dir)
-                console.log "#build-name: #{l.name} #{l.deps}"
-                console.log echo-step "compiling $<"
-                if l.type == \less
-                    console.log "\t lessc --verbose --include-path=#{if l.include? then l.include else '.'} $< > $@"
+execute-hooks = (phase) ~>
+    for h in @hooks
+        if h.phase == phase
+            for file in @big-list-of-files 
+                if h.predicate(file)
+                    h.action(file, path-system)
                     
-   
-    if im? 
-        console.log "#{ht} Assets (images)"
-        console.log reduce-to "client img",
-            [ all(files-of-type: f.files-of-type, in: f.in) 
-              |> take-name 
-              |> rebase-to(client-dir-img) for f in im ]
-    
-    if fo? 
-        console.log "#{ht} Assets (Font)"
-        console.log reduce-to "client fonts",
-            [ all(files-of-type: f.files-of-type, in: f.in) 
-              |> take-name 
-              |> rebase-to(client-dir-fonts) for f in fo ]
+add-hook '_deploy', -> (it?.root? and it.root), (file, path-system) ->
+    x "install -m 555 #{file.final-name} #{path-system.client-dir}"
 
-    if cf?  
-        console.log "#{ht} Build up client.js"
-        console.log "#{build-dir}/client.js: #{getvar('client sources')}"
-        console.log "\tcat $^ > $@"
-        
+add-hook 'server',  -> (it?.main? and it.main), (file, path-system) ->
+    x nodemon("#{path-system.server-dir}/#{file.dst-name}")
+
+add-hook 'server',  -> (it?.test? and it.test), (file, path-system) ->
+    x "watchman -r 3s -w ./client-changed 'mocha #{path-system.server-dir}/#{file.dst-name} --reporter spec' &"
+
+get-watch-names = ~>
+    @big-list-of-files |> filter (-> it?) |> (.watch-name)
     
-    if vf?     
-        console.log "#{ht} Build up vendor.js"
-        console.log "#{build-dir}/vendor.js: #{getvar('client vendor sources')}"
-        console.log "\tcat $^ > $@"
+get-source-dirs = ~>
+    @big-list-of-files |> filter (-> it?) |> (.dir-name)
+   
+ 
+generate-makefile-ext = ( path-system-options, files ) ->
+
+    { build-dir, deploy-dir, server-dir, client-dir, client-dir-img, client-dir-fonts } = path-system-options
+    { client-js: cf, vendor-js: vf, server-js: sf, client-css: cs }                     = files
+    { client-html: ch, client-img: im, client-fonts: fo, depth: dp }                    = files 
+    { trigger-files:  trigger-files, additional-commands: additional-commands }         = files
+   
+    
+    reset-targets()
+    init-hooks-data(cf, sf, vf, cs, ch)
+   
+    collect-targets(from-source-list: cf, into-target-variable: "client sources",       build-dir: build-dir,  final-type: \js,   into-file:       "#build-dir/client.js" )
+    collect-targets(from-source-list: sf, into-target-variable: "server sources",       build-dir: build-dir,  final-type: \js)
+    collect-targets(from-source-list: vf, into-target-variable: "vendor client sources",build-dir: build-dir,  final-type: \js,   into-file:       "#build-dir/vendor.js")
+    collect-targets(from-source-list: cs, into-target-variable: "client css",           build-dir: build-dir,  final-type: \css,  into-file:       "#build-dir/client.css")
+    collect-targets(from-source-list: ch, into-target-variable: "client html",          build-dir: build-dir,  final-type: \html)
+  
+  
+    it 'deploys all targets', {with-target: \all }, -> 
+        x 'make deploy'
+     
+    task with-name: "deploy",  step-list: ["pre-deploy", "build", "_deploy", "post-deploy"]
+    task with-name: "build",   step-list: ["pre-build", "_build"]
+
+    it 'creates temporary directories', {with-target: "pre-build"}, ->
+        x "mkdir -p #build-dir"
+   
+   
+    it 'creates deploy directories', {with-target: "pre-deploy"}, ->
+        x "mkdir -p #deploy-dir" 
+        x "mkdir -p #server-dir"        unless not sf?
+        x "mkdir -p #client-dir"        unless not cf? and not cs? and not im? and not fo? and not ch?
+        x "mkdir -p #client-dir/js"     unless not cf?
+        x "mkdir -p #client-dir/css"    unless not cs?
+        x "mkdir -p #client-dir-img"    unless not im?
+        x "mkdir -p #client-dir-fonts"  unless not fo?
+        x "mkdir -p #client-dir/html"   unless not ch?
+
+    it 'deploys files', {with-target: "_deploy"}, ->
+        foreach-file-in("server sources",   (file) -> "install -m 555 #file #{server-dir}") unless not sf?
+        foreach-file-in("client html",      (file) -> "install -m 555 #file #{client-dir}/html") unless not ch?
         
-    if cs?
-        csdep = [ s.deps for s in cs ] * ' '
-        console.log "#{ht} Build up client.css"
-        console.log "#{build-dir}/client.css: #{getvar('client css sources')} "
-        console.log "\tcat  #{getvar('client css sources')} > $@"
+        install-file name: "#{build-dir}/client.js",    derived-from-list: cf, final-directory: "#client-dir/js" 
+        install-file name: "#{build-dir}/vendor.js",    derived-from-list: vf, final-directory: "#client-dir/js" 
+        install-file name: "#{build-dir}/client.css",   derived-from-list: cs, final-directory: "#client-dir/css"
+        copy-targets from-source-list: im, copy-into-dir: client-dir-img 
+        copy-targets from-source-list: fo, copy-into-dir: client-dir-fonts
+        execute-hooks("_deploy")
+        m "Deployed" 
+    
+    it 'post deploys files', {with-target: "post-deploy"}, ->
+        m "nothing to do in post-deploy"
+
+    it 'completes build', {with-target: '_build', dependencies: get-targets()}, ->
+
+    assets-targets ="#{getvar('client img') unless not im?} #{getvar('client fonts') unless not im?} "
+    
+    p "VPATH definition"    
+    o "VPATH = #{ce}"
+    
+    for path in get-source-dirs() 
+        o "#bt #path #ce"
        
-    console.log "#{ht} Install server files"
-    console.log ".PHONY: install"
-    console.log "install: build" 
-    console.log(echo-step "installing into #deploy-dir")
-    console.log "\t mkdir -p #deploy-dir" 
-    console.log "\t mkdir -p #server-dir" 
-    console.log "\t mkdir -p #client-dir" 
-    console.log "\t mkdir -p #client-dir/js" 
-    console.log "\t mkdir -p #client-dir/css" 
-    console.log "\t mkdir -p #client-dir-img" 
-    console.log "\t mkdir -p #client-dir-fonts" 
-    console.log "\t mkdir -p #client-dir/html"
-    if sf? 
-        for f in sf
-            nn = f.name |> take-name |> change-type f.type, \js |> rebase-to build-dir
-            console.log "\t install -m 555 #{nn} #{server-dir}"
-
-    if ch?
-        for f in ch 
-            nn = f.name |> take-name |> change-type f.type, \html |> rebase-to build-dir
-            if not f.root
-                console.log "\t install -m 555 #{nn} #{client-dir}/html/"
-            else console.log "\t install -m 555 #{nn} #{client-dir}/"
-         
-    if cf? then console.log "\t install -m 555 #{build-dir}/client.js #client-dir/js"
-    if vf? then console.log "\t install -m 555 #{build-dir}/vendor.js #client-dir/js"
-    if cs? then console.log "\t install -m 555 #{build-dir}/client.css #client-dir/css"
-    if additional-commands?
-        console.log additional-commands
-    console.log(echo-step "installed")
-
-    console.log "#{ht} Prepare build directory"
-    console.log "prepare-build: "
-    console.log "\t mkdir -p #build-dir"
-    
-    console.log "#{ht} Build files"
-    console.log ".PHONY: build"
-    console.log "build: #ft"
-   
-    console.log "#{ht} Deploy files" 
-    console.log ".PHONY: deploy"
-    console.log "deploy:"
-    console.log echo-step "deploying... fails if not OK at the end"
-    console.log "\t make prepare-build"
-    console.log "\t make install"
-    if im? or fo? 
-        console.log "\t make install-assets"
-    console.log echo-ok "OK"
+    # it 'starts continuous build', {with-target: \server}, ->
+    #     x "@touch ./.client-changed"
+    #     x "@touch ./.recompile-all"
         
+    #     if not dp?
+    #         dp = 2
+            
+    #     to-be-watched = sensitive-dirs(get-watch-names(), dp)
         
+    #     for path in to-be-watched
+    #         x watch(path, 'touch ./.client-changed')
         
-    console.log "#{ht} VPATH definition"
-    console.log "VPATH = #{ce}" 
-    if cf? then console.log bt + ([ s.in for s in cf ] * "#{ct}" + ce)  
-    if im? then console.log bt + ([ s.in for s in im ] * "#{ct}" + ce)  
-    if fo? then console.log bt + ([ s.in for s in fo ] * "#{ct}" + ce)  
-    if ch? then console.log bt + ([ "$(dir #{s.name})" for s in ch ] * "#{ct}" + ce) 
-    if sf? then console.log bt + ([ "$(dir #{s.name})" for s in sf ] * "#{ct}" + ce) 
-    if cs? then console.log bt + ([ "$(dir #{s.name})" for s in cs ] * "#{ct}" + ce) 
-    if vf? then console.log bt + ([ "$(dir #{s.name})" for s in vf ] * "#{ct}" + ce)
-
-    console.log "#{ht} Start Continuous Build"
-    console.log "start-cb: "
-    console.log echo-step "starting continuous build"
-    console.log bt + "@touch ./client-changed"
-    console.log bt + "@touch ./recompile-all"
+    #     x watch './.client-changed', 'make deploy; chromereload;'
+    #     x watch './.recompile-all',  'make clean && make deploy; chromereload;'
+        
+    #     execute-hooks("server")
     
-    all-files = [] 
-    if cf? then all-files = all-files.concat( [ s.in   for s in cf ] )
-    if im? then all-files = all-files.concat( [ s.in   for s in im ] )
-    if fo? then all-files = all-files.concat( [ s.in   for s in fo ] )
-    if ch? then all-files = all-files.concat( [ s.name for s in ch ] )
-    if sf? then all-files = all-files.concat( [ s.name for s in sf ] )
-    if cs? then all-files = all-files.concat( [ s.name for s in cs ] )
-    if vf? then all-files = all-files.concat( [ s.name for s in vf ] )
-
-    # console.log "\# watching: #all-files"
-    if not dp?
-        dp = 2
-    to-be-watched = sensitive-dirs(all-files, dp)
-    # console.log "\# to be watched: #to-be-watched"
-    console.log bt + ( [watch(file, 'touch ./client-changed') for file in to-be-watched ] * "#{le}") 
-    console.log bt + watch("./client-changed",'make deploy; chromereload;')
-    console.log bt + watch("./recompile-all",'make clean && make deploy; chromereload;')
-    if sf?
-        for s in sf
-            if s.main? and s.main then
-                console.log bt + nodemon("#{server-dir}/#{s.name |> take-name |> change-type(s.type, \js) |> trim }")
-            if s.test? and s.test then
-                console.log bt + "watchman -r 3s -w ./client-changed 'mocha #{server-dir}/#{s.name |> take-name |> change-type(s.type, \js) |> trim } --reporter spec' &" 
-    if ch?
-        for s in ch 
-            if s.root? and s.root and (s.serve? and s.serve)
-                console.log bt + "@serve #{client-dir} &" 
+#     if ch?
+#         for s in ch 
+#             if s.root? and s.root and (s.serve? and s.serve)
+#                 console.log bt + "@serve #{client-dir} &" 
     
-    if trigger-files?
-        for t in trigger-files
-             console.log bt + watch(t, 'touch ./recompile-all')
+#     if trigger-files?
+#         for t in trigger-files
+#              console.log bt + watch(t, 'touch ./recompile-all')
     
-    if sf?
-        for s in sf
-            if s.test? and s.test then
-                console.log "#{ht} Tests"
-                console.log ".PHONY: test"
-                console.log ""
-                console.log "test:"
-                console.log "\t mocha #{server-dir}/#{s.name |> take-name |> change-type(s.type, \js) |> trim } --reporter spec" 
+#     if sf?
+#         for s in sf
+#             if s.test? and s.test then
+#                 console.log "#{ht} Tests"
+#                 console.log ".PHONY: test"
+#                 console.log ""
+#                 console.log "test:"
+#                 console.log "\t mocha #{server-dir}/#{s.name |> take-name |> change-type(s.type, \js) |> trim } --reporter spec" 
      
     
-    console.log "#{ht} Stop Continuous Build" 
-    console.log "stop-cb:" 
-    console.log "\t -killall node"
+#     console.log "#{ht} Stop Continuous Build" 
+#     console.log "stop-cb:" 
+#     console.log "\t -killall node"
 
-    common-targets = """
-#{build-dir}/%.js: %.ls
-#{echo-step "compiling $^"}
-\t lsc --output #{build-dir} -c $<
+#     common-targets = """
+# #{build-dir}/%.js: %.ls
+# #{echo-step "compiling $^"}
+# \t lsc --output #{build-dir} -c $<
 
-#{build-dir}/%.js: %.js
-\t cp $< $@
+# #{build-dir}/%.js: %.js
+# \t cp $< $@
     
-#{build-dir}/%.js: %.coffee
-#{echo-step "compiling $^"}
-\t coffee -b -l --output #{build-dir} -c $<
+# #{build-dir}/%.js: %.coffee
+# #{echo-step "compiling $^"}
+# \t coffee -b -l --output #{build-dir} -c $<
     
-#{build-dir}/%.html: %.jade
-#{echo-step "compiling $^"}
-\t @jade -P --out #{build-dir} $<
+# #{build-dir}/%.html: %.jade
+# #{echo-step "compiling $^"}
+# \t @jade -P --out #{build-dir} $<
 
-#{build-dir}/%.css: %.css
-\t cp $< $@
+# #{build-dir}/%.css: %.css
+# \t cp $< $@
 
-#{build-dir}/%.html: %.html
-\t cp $< $@
+# #{build-dir}/%.html: %.html
+# \t cp $< $@
 
-#{build-dir}/%.html: %.svg
-\t cp $< $@
+# #{build-dir}/%.html: %.svg
+# \t cp $< $@
 
-#{build-dir}/%.css: %.styl
-#{echo-step "compiling $^"}
-\t stylus $< -o #{build-dir}
+# #{build-dir}/%.css: %.styl
+# #{echo-step "compiling $^"}
+# \t stylus $< -o #{build-dir}
 
-#{client-dir-img}/%: %
-\t cp $< $@
+# #{client-dir-img}/%: %
+# \t cp $< $@
 
-#{client-dir-fonts}/%: %
-\t cp $< $@
+# #{client-dir-fonts}/%: %
+# \t cp $< $@
 
-makefile: makefile.ls
-#{echo-step "compiling $^"}
-\t ./makefile.ls > makefile 
+# makefile: makefile.ls
+# #{echo-step "compiling $^"}
+# \t ./makefile.ls > makefile 
 
-npm-install:
-#{echo-step "Installing a link globally on this machine."}
-#{echo-step "Remember to do a `npm link pkg_name` in the"}
-#{echo-step "directory of the modules that are going to use this."}
-\t npm link .
+# npm-install:
+# #{echo-step "Installing a link globally on this machine."}
+# #{echo-step "Remember to do a `npm link pkg_name` in the"}
+# #{echo-step "directory of the modules that are going to use this."}
+# \t npm link .
 
-#{npm-git-action('patch')}
+# #{npm-git-action('patch')}
 
-#{npm-git-action('minor')}
+# #{npm-git-action('minor')}
 
-#{npm-git-action('major')}
+# #{npm-git-action('major')}
     
-npm-commit:
-\t git commit -a 
+# npm-commit:
+# \t git commit -a 
 
-npm-finalize:
-\t git checkout master
-\t git merge development
-\t npm publish .
+# npm-finalize:
+# \t git checkout master
+# \t git merge development
+# \t npm publish .
 
-distclean:
-\t -rm -rf #{build-dir} 
-\t -rm -rf #{deploy-dir} 
+# distclean:
+# \t -rm -rf #{build-dir} 
+# \t -rm -rf #{deploy-dir} 
     
-#{build-dir}/%.css: %.less 
-#{echo-step "compiling $^"}
-\t lessc --verbose $< > $@
+# #{build-dir}/%.css: %.less 
+# #{echo-step "compiling $^"}
+# \t lessc --verbose $< > $@
 
-#{help()}
-"""
+# #{help()}
+# """
 
    
-    console.log "#{ht} Common targets"
-    console.log common-targets 
+#     console.log "#{ht} Common targets"
+#     console.log common-targets 
     
-    console.log "#{ht} Clean up"
-    console.log "clean:"
-    console.log "\t  -rm -rf #{deploy-dir}/*"
-    console.log "\t  -rm -rf #{build-dir}/*"
-    console.log "\t  -rm -f ./client-changed"
-    console.log "\t  -rm -f ./recompile-all"
+#     console.log "#{ht} Clean up"
+#     console.log "clean:"
+#     console.log "\t  -rm -rf #{deploy-dir}/*"
+#     console.log "\t  -rm -rf #{build-dir}/*"
+#     console.log "\t  -rm -f ./client-changed"
+#     console.log "\t  -rm -f ./recompile-all"
    
-    if im? or fo? 
-        console.log "#{ht} Install assets"
-        console.log echo-step "installing assets"
-        console.log "install-assets: #{if im? then getvar('client img') else ''} #{if fo? then getvar('client fonts') else ''}"
+#     if im? or fo? 
+#         console.log "#{ht} Install assets"
+#         console.log echo-step "installing assets"
+#         console.log "install-assets: #{if im? then getvar('client img') else ''} #{if fo? then getvar('client fonts') else ''}"
         
-generate-makefile                   = generate-makefile-ext(path-system.build-dir, path-system.deploy-dir, path-system.server-dir, path-system.client-dir, path-system.client-dir-img, path-system.client-dir-fonts)
-exports.generate-makefile           = generate-makefile
-exports.generate-makefile-ext       = generate-makefile-ext
-exports.generate-makefile-config    = generate-makefile-config
+# generate-makefile                   = generate-makefile-ext(path-system.build-dir, path-system.deploy-dir, path-system.server-dir, path-system.client-dir, path-system.client-dir-img, path-system.client-dir-fonts)
+# exports.generate-makefile           = generate-makefile
+# exports.generate-makefile-ext       = generate-makefile-ext
+# exports.generate-makefile-config    = generate-makefile-config
 exports.make-ps                     = generate-makefile-config-ps
 exports.all                         = all 
 

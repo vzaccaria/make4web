@@ -1,7 +1,7 @@
 {
-  "name": "lakefile",
-  "version": "0.0.1",
-  "description": "Generate makefiles with Livescript",
+  "name": "make4web",
+  "version": "0.0.0",
+  "description": "Generate makefiles for webapps with Livescript",
   "main": "index.js",
   "dependencies": {
     "LiveScript": "~1.1.1",

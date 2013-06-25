@@ -4,3 +4,7 @@ deploy/server/lakefile.js
 lib/lakefile.js
 
 src/make4web.ls
+
+txt.mk
+
+x.mk
