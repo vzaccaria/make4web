@@ -63,13 +63,13 @@ sensitive-dirs = (files, n) ->
 tag = 'lake'
 
 watch = (file, command) ->
-    "@watchman -w #file \'#{command}\' 1>&2 > /dev/null & " + 'echo "$$!" >> "./.watches.pid"'
+    "@watchman -w #file \'#{command}\' & " + 'echo "$$!" >> "./.watches.pid"'
     
 nodemon = (file, command) ->
     "@nodemon -q #file & " + 'echo "$$!" >> "./.watches.pid"'
 
 watch-w-rate = (file, command, rate) ->
-    "@watchman -r #rate -w #file \'#{command}\' 1>&2 > /dev/null & " + 'echo "$$!" >> "./.watches.pid"'
+    "@watchman -r #rate -w #file \'#{command}\' & " + 'echo "$$!" >> "./.watches.pid"'
 
 serve = (directory) ->
     
