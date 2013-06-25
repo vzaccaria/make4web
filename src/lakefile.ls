@@ -212,7 +212,8 @@ o = (x) ->
     console.log x
     
 m = (x) ->
-    o echo-step "#{_.str.humanize(x)}"
+    o echo "└─(#{_.str.humanize(x)}."
+    o echo ""
 
 x = (y) ->
     o "\t #y"
@@ -229,19 +230,19 @@ it = (description, {with-target, dependencies, not-phony}, cb) ->
     if not not-phony?
         o ".PHONY: #{with-target}"
     o "#{with-target}: #{dependencies |> pretty}"
-    m "#description"
+    # m "#description"
     cb()
     
 foreach-file-in = (variable-name, cb) ->
     o   """
-        \t for i in #{getvar variable-name}; do \\
+        \t @for i in #{getvar variable-name}; do \\
         \t\t #{cb('$$i')}; \\
         \t done 
         """ 
 
 foreach-file-in-expression = (expression, cb) ->
     o   """
-        \t for i in #{expression}; do \\
+        \t @for i in #{expression}; do \\
         \t\t #{cb('$$i')}; \\
         \t done 
         """ 
@@ -334,7 +335,7 @@ task = ({with-name, step-list}) ->
    
     it "runs task #with-name", {with-target: task-name}, ->
         for s in step-list 
-            x "make #s"
+            x "@make #s"
         
         o ""
 
@@ -457,18 +458,18 @@ generate-makefile-ext = ( path-system-options, files ) ->
     collect-targets(from-source-list: ch, into-target-variable: "client html",          build-dir: build-dir,  final-type: \html)
   
     it 'create temporary directories', {with-target: "pre-build"}, ->
-        x "mkdir -p #build-dir"
+        x "@mkdir -p #build-dir"
    
    
     it 'create deploy directories', {with-target: "pre-deploy"}, ->
-        x "mkdir -p #deploy-dir" 
-        x "mkdir -p #server-dir"        unless not sf?
-        x "mkdir -p #client-dir"        unless not cf? and not cs? and not im? and not fo? and not ch?
-        x "mkdir -p #client-dir/js"     unless not cf?
-        x "mkdir -p #client-dir/css"    unless not cs?
-        x "mkdir -p #client-dir-img"    unless not im?
-        x "mkdir -p #client-dir-fonts"  unless not fo?
-        x "mkdir -p #client-dir/html"   unless not ch?
+        x "@mkdir -p #deploy-dir" 
+        x "@mkdir -p #server-dir"        unless not sf?
+        x "@mkdir -p #client-dir"        unless not cf? and not cs? and not im? and not fo? and not ch?
+        x "@mkdir -p #client-dir/js"     unless not cf?
+        x "@mkdir -p #client-dir/css"    unless not cs?
+        x "@mkdir -p #client-dir-img"    unless not im?
+        x "@mkdir -p #client-dir-fonts"  unless not fo?
+        x "@mkdir -p #client-dir/html"   unless not ch?
 
     it 'deploy files', {with-target: "_deploy"}, ->
         foreach-file-in("server sources",   (file) -> "install -m 555 #file #{server-dir}") unless not sf?
@@ -484,9 +485,12 @@ generate-makefile-ext = ( path-system-options, files ) ->
     
     it 'post deploy files', {with-target: "post-deploy"}, ->
         hooks.execute-hooks("post-deploy")
+        m "post deploy done"
 
     it 'build completed', {with-target: '_build', dependencies: get-targets()}, ->
         hooks.execute-hooks("_build")
+        m "build completed"
+
 
     assets-targets ="#{getvar('client img') unless not im?} #{getvar('client fonts') unless not im?} "
    
