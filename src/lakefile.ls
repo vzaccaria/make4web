@@ -111,11 +111,12 @@ targets = [
     }
     {
         category: 'release management', targets: [
+            { name: "git-{patch, minor, major}",            description: "Commits, tags and pushes the current branch" }
+            { name: "npm-{patch, minor, major}",            description: "As git-*, but it does publish on npm"}
             { name: "npm-install",      description: "install a global link to this package, to use it: #{'npm link pkgname' |> cd} in the target dir"}
             { name: "npm-prepare-x",    description: "prepare npm version update and gittag it - x={ patch, minor, major }"}
             { name: "npm-commit",       description: "commit version change"}
             { name: "npm-finalize",     description: "merge development branch into master and publish npm"}
-            { name: "npm-x",            description: "prepare action x={ patch, minor, major }"}
         ]
     }
 
@@ -157,6 +158,16 @@ npm-git-action = (action) ->
     \t make npm-finalize
     """
 
+git-action = (action) ->
+    """
+    git-#action:
+    #{echo "Update version, commit and tag the current branch"}
+    #{echo "Does not publish to the npm repository."}
+    \t npm version #action 
+    \t git commit -a
+    \t git push
+    """
+    
 makeify = (s) ->
     _.str.underscored(_.str.dasherize(s)).toUpperCase()
     
@@ -534,6 +545,15 @@ generate-makefile-ext = ( path-system-options, files ) ->
     
     p "npm major"
     o npm-git-action('major')
+    
+    p "git patch"
+    o git-action('patch')
+    
+    p "git minor"
+    o git-action('minor')
+    
+    p "git major"
+    o git-action('major')
     
     it 'Commits changes to git', { with-target: "npm-commit"}, ->
         x "git commit -a"

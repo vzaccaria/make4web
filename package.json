@@ -1,7 +1,7 @@
 {
-  "name": "make4web",
+  "name": "wmake",
   "version": "0.0.0",
-  "description": "Generate makefiles for webapps with Livescript",
+  "description": "Generate makefiles for webapps",
   "main": "index.js",
   "dependencies": {
     "LiveScript": "~1.1.1",

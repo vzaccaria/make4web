@@ -10,3 +10,5 @@ txt.mk
 x.mk
 
 test.mk
+
+npm-debug.log
