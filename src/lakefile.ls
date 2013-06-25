@@ -63,10 +63,16 @@ sensitive-dirs = (files, n) ->
 tag = 'lake'
 
 watch = (file, command) ->
-    "watchman -w #file \'#{command}\' &" 
+    "watchman -w #file \'#{command}\' & " + 'echo "$$!" >> "./.watches.pid"'
     
 nodemon = (file, command) ->
-    "nodemon -q #file" 
+    "nodemon -q #file & " + 'echo "$$!" >> "./.watches.pid"'
+
+watch-w-rate = (file, command, rate) ->
+    "watchman -r #rate -w #file \'#{command}\' & " + 'echo "$$!" >> "./.watches.pid"'
+
+serve = (directory) ->
+    
 
 echo-step = (stepname, level=0) ->
     lvs = [ ' ' for e from 1 to level*2 ] * ''
@@ -91,7 +97,7 @@ targets = [
     {
         category: 'continuous build', targets: [
             { name: "server",   description: "starts continuous build"}
-            { name: "stop-cb",  description: "stops continuous build"}
+            { name: "reverse",  description: "stops continuous build"}
         ]
     }
     {
@@ -300,8 +306,11 @@ generate-makefile-config-ps = ({
     o "\# (c) 2013 - Vittorio Zaccaria, all rights reserved"
     o "\n\# Current configuration: "
     
-    for i in _.str.lines(JSON.stringify(path-system, null, 2))
-        console.log "\# #i"
+    # for i in _.str.lines(JSON.stringify(path-system, null, 2))
+    #     console.log "\# #i"
+
+    for k,v of path-system
+        o "#{makeify k}=#v"
         
     generate-makefile-ext(path-system,s)
 
@@ -319,39 +328,96 @@ pretty = (x) ->
     if x? then x else ""
 
 
-add-hook = (phase, predicate, action) ~>
-    @hooks = []
-    @hooks.push {phase: phase, predicate: predicate, action: action}
-     
-   
-init-hooks-data = (cf, sf, vf, cs, ch, im, fo) ~>
-    @big-list-of-files = []
-    for l in [cf, sf, vf, cs, ch ]
-        @big-list-of-files = @big-list-of-files.concat(l)
-    
-execute-hooks = (phase) ~>
-    for h in @hooks
-        if h.phase == phase
-            for file in @big-list-of-files 
-                if h.predicate(file)
-                    h.action(file, path-system)
-                    
-add-hook '_deploy', -> (it?.root? and it.root), (file, path-system) ->
-    x "install -m 555 #{file.final-name} #{path-system.client-dir}"
 
-add-hook 'server',  -> (it?.main? and it.main), (file, path-system) ->
+class hooks-data
+   
+    -> 
+        @hooks = []
+        @big-list-of-files = []
+    
+    init-hooks-data: (cf, sf, vf, cs, ch, im, fo) ~>
+        for l in [cf, sf, vf, cs, ch ]
+            @big-list-of-files = @big-list-of-files.concat(l)
+    
+    add-hook: (phase, predicate, action) ~>
+        @hooks.push {phase: phase, predicate: predicate, action: action}
+        
+    execute-hooks: (phase) ~>
+        for h in @hooks
+            if h.phase == phase
+                for file in @big-list-of-files 
+                    if h.predicate(file)
+                        h.action(file, path-system)
+    
+    get-watch-names: ~>
+        @big-list-of-files |> filter (-> it?.watch-name?) |> map (.watch-name)
+   
+    get-source-dirs: ~>
+        @big-list-of-files |> filter (-> it?.watch-name?) |> map (.dir-name)
+
+hooks = new hooks-data()
+                    
+hooks.add-hook '_deploy', -> (it?.root? and it.root), (file, path-system) ->
+    x "install -m 555 #{file.build-name} #{path-system.client-dir}"
+
+hooks.add-hook 'server',  -> (it?.main? and it.main), (file, path-system) ->
     x nodemon("#{path-system.server-dir}/#{file.dst-name}")
 
-add-hook 'server',  -> (it?.test? and it.test), (file, path-system) ->
-    x "watchman -r 3s -w ./client-changed 'mocha #{path-system.server-dir}/#{file.dst-name} --reporter spec' &"
-
-get-watch-names = ~>
-    @big-list-of-files |> filter (-> it?) |> (.watch-name)
-    
-get-source-dirs = ~>
-    @big-list-of-files |> filter (-> it?) |> (.dir-name)
+hooks.add-hook 'server',  -> (it?.test? and it.test), (file, path-system) ->
+    x watch-w-rate('./client-changed', 'mocha #{path-system.server-dir}/#{file.dst-name} --reporter spec', "3s")
    
+hooks.add-hook 'server',  -> (it?.root? and it.root), (file, path-system) ->
+    x serve(path-system.client-dir)
+
+hooks.add-hook 'test', -> (it?.test? and it.test), (file, path-system) ->
+    x "mocha #{path-system.server-dir}/#{file.dst-name} --reporter spec"
+    
+
+class translation-plugins
+    
+    ->
+        @plugins = []
+        
+    output-translation: (s-ext, d-ext, command, path-system) ~~>
+       
+        p "Converting from #{s-ext} to #{d-ext}"  
+        o "#{path-system.build-dir}/%.#{d-ext}: %.#{s-ext}"
+        x "#{command('$<', '$@', '$^', '$(BUILD_DIR)')}"
  
+    output-specific-translation: (s-name, d-name, dependencies, command, path-system) ~~>
+       
+        p "Converting from #{s-name} to #{d-name}"  
+        o "#{path-system.build-dir}/#{d-name}: #s-name #dependencies"
+        x "#{command('$<', '$@', '$^', '$(BUILD_DIR)')}"       
+    
+    add-translation: (s-ext, d-ext, command) ~>
+        @plugins.push(@output-translation(s-ext, d-ext, command))
+  
+    add-specific-translation: (s-name, d-name, dependencies, command) ~>
+        @plugins.push(@output-specific-translation(s-name, d-name, dependencies, command))
+          
+    output-translations: (path-system) ~>
+        for p in @plugins 
+            p(path-system)
+        
+
+plugins = new translation-plugins()
+
+plugins.add-translation(\ls,     \js, (source-name, dest-name, depencencies, build-dir) -> "lsc --output #{build-dir} -c #{source-name}")      
+plugins.add-translation(\coffee, \js, (source-name, dest-name, depencencies, build-dir) -> "coffee -b -l --output #{build-dir} #{source-name}")      
+plugins.add-translation(\jade, \html, (source-name, dest-name, depencencies, build-dir) -> "@jade -P --out #{build-dir}")      
+plugins.add-translation(\styl,  \css, (source-name, dest-name, depencencies, build-dir) -> "stylus $< -o #{build-dir}")      
+plugins.add-translation(\less, \css,  (source-name, dest-name, depencencies, build-dir) -> "lessc --verbose #{source-name} > #{dest-name}" )
+
+
+for c in [ \js \css \svg ]
+    plugins.add-translation(c, c,     (source-name, dest-name, depencencies, build-dir) -> "cp #{source-name} #{dest-name}")      
+
+hooks.add-hook '_build', -> (it?.include? and it.include), (file, path-system) ->
+    plugins.add-specific-translation(file.name, file.build-name, file.deps,  (source-name, dest-name, depencencies, build-dir) -> 
+        "lessc --verbose --include-path=#{file.include} #{source-name} > #{dest-name}")
+    
+    
 generate-makefile-ext = ( path-system-options, files ) ->
 
     { build-dir, deploy-dir, server-dir, client-dir, client-dir-img, client-dir-fonts } = path-system-options
@@ -361,7 +427,7 @@ generate-makefile-ext = ( path-system-options, files ) ->
    
     
     reset-targets()
-    init-hooks-data(cf, sf, vf, cs, ch)
+    hooks.init-hooks-data(cf, sf, vf, cs, ch)
    
     collect-targets(from-source-list: cf, into-target-variable: "client sources",       build-dir: build-dir,  final-type: \js,   into-file:       "#build-dir/client.js" )
     collect-targets(from-source-list: sf, into-target-variable: "server sources",       build-dir: build-dir,  final-type: \js)
@@ -399,154 +465,94 @@ generate-makefile-ext = ( path-system-options, files ) ->
         install-file name: "#{build-dir}/client.css",   derived-from-list: cs, final-directory: "#client-dir/css"
         copy-targets from-source-list: im, copy-into-dir: client-dir-img 
         copy-targets from-source-list: fo, copy-into-dir: client-dir-fonts
-        execute-hooks("_deploy")
+        hooks.execute-hooks("_deploy")
         m "Deployed" 
     
     it 'post deploys files', {with-target: "post-deploy"}, ->
         m "nothing to do in post-deploy"
 
     it 'completes build', {with-target: '_build', dependencies: get-targets()}, ->
+        hooks.execute-hooks("_build")
 
     assets-targets ="#{getvar('client img') unless not im?} #{getvar('client fonts') unless not im?} "
     
     p "VPATH definition"    
     o "VPATH = #{ce}"
     
-    for path in get-source-dirs() 
+    for path in hooks.get-source-dirs() 
         o "#bt #path #ce"
        
-    # it 'starts continuous build', {with-target: \server}, ->
-    #     x "@touch ./.client-changed"
-    #     x "@touch ./.recompile-all"
+    it 'starts continuous build', {with-target: \server}, ->
+        x "@touch ./.client-changed"
+        x "@touch ./.recompile-all"
+        x "echo '' > ./.watches.pid"
         
-    #     if not dp?
-    #         dp = 2
+        if not dp?
+            dp = 2
             
-    #     to-be-watched = sensitive-dirs(get-watch-names(), dp)
+        to-be-watched = sensitive-dirs(hooks.get-watch-names(), dp)
         
-    #     for path in to-be-watched
-    #         x watch(path, 'touch ./.client-changed')
+        for path in to-be-watched
+            x watch(path, 'touch ./.client-changed')
         
-    #     x watch './.client-changed', 'make deploy; chromereload;'
-    #     x watch './.recompile-all',  'make clean && make deploy; chromereload;'
+        x watch './.client-changed', 'make deploy; chromereload;'
+        x watch './.recompile-all',  'make clean && make deploy; chromereload;'
         
-    #     execute-hooks("server")
-    
-#     if ch?
-#         for s in ch 
-#             if s.root? and s.root and (s.serve? and s.serve)
-#                 console.log bt + "@serve #{client-dir} &" 
-    
-#     if trigger-files?
-#         for t in trigger-files
-#              console.log bt + watch(t, 'touch ./recompile-all')
-    
-#     if sf?
-#         for s in sf
-#             if s.test? and s.test then
-#                 console.log "#{ht} Tests"
-#                 console.log ".PHONY: test"
-#                 console.log ""
-#                 console.log "test:"
-#                 console.log "\t mocha #{server-dir}/#{s.name |> take-name |> change-type(s.type, \js) |> trim } --reporter spec" 
-     
-    
-#     console.log "#{ht} Stop Continuous Build" 
-#     console.log "stop-cb:" 
-#     console.log "\t -killall node"
-
-#     common-targets = """
-# #{build-dir}/%.js: %.ls
-# #{echo-step "compiling $^"}
-# \t lsc --output #{build-dir} -c $<
-
-# #{build-dir}/%.js: %.js
-# \t cp $< $@
-    
-# #{build-dir}/%.js: %.coffee
-# #{echo-step "compiling $^"}
-# \t coffee -b -l --output #{build-dir} -c $<
-    
-# #{build-dir}/%.html: %.jade
-# #{echo-step "compiling $^"}
-# \t @jade -P --out #{build-dir} $<
-
-# #{build-dir}/%.css: %.css
-# \t cp $< $@
-
-# #{build-dir}/%.html: %.html
-# \t cp $< $@
-
-# #{build-dir}/%.html: %.svg
-# \t cp $< $@
-
-# #{build-dir}/%.css: %.styl
-# #{echo-step "compiling $^"}
-# \t stylus $< -o #{build-dir}
-
-# #{client-dir-img}/%: %
-# \t cp $< $@
-
-# #{client-dir-fonts}/%: %
-# \t cp $< $@
-
-# makefile: makefile.ls
-# #{echo-step "compiling $^"}
-# \t ./makefile.ls > makefile 
-
-# npm-install:
-# #{echo-step "Installing a link globally on this machine."}
-# #{echo-step "Remember to do a `npm link pkg_name` in the"}
-# #{echo-step "directory of the modules that are going to use this."}
-# \t npm link .
-
-# #{npm-git-action('patch')}
-
-# #{npm-git-action('minor')}
-
-# #{npm-git-action('major')}
-    
-# npm-commit:
-# \t git commit -a 
-
-# npm-finalize:
-# \t git checkout master
-# \t git merge development
-# \t npm publish .
-
-# distclean:
-# \t -rm -rf #{build-dir} 
-# \t -rm -rf #{deploy-dir} 
-    
-# #{build-dir}/%.css: %.less 
-# #{echo-step "compiling $^"}
-# \t lessc --verbose $< > $@
-
-# #{help()}
-# """
+        hooks.execute-hooks("server")
+        
+        map (-> x watch(it, 'touch ./recompile-all')) trigger-files unless not trigger-files?
 
    
-#     console.log "#{ht} Common targets"
-#     console.log common-targets 
+    it 'stops the continuous build', (with-target: \reverse), ->
+        x "cat ./.watches.pid | xargs -n 1 kill -9"
     
-#     console.log "#{ht} Clean up"
-#     console.log "clean:"
-#     console.log "\t  -rm -rf #{deploy-dir}/*"
-#     console.log "\t  -rm -rf #{build-dir}/*"
-#     console.log "\t  -rm -f ./client-changed"
-#     console.log "\t  -rm -f ./recompile-all"
-   
-#     if im? or fo? 
-#         console.log "#{ht} Install assets"
-#         console.log echo-step "installing assets"
-#         console.log "install-assets: #{if im? then getvar('client img') else ''} #{if fo? then getvar('client fonts') else ''}"
+    it 'tests server files', { with-target: \test }, ->
+        hooks.execute-hooks("test")
         
-# generate-makefile                   = generate-makefile-ext(path-system.build-dir, path-system.deploy-dir, path-system.server-dir, path-system.client-dir, path-system.client-dir-img, path-system.client-dir-fonts)
-# exports.generate-makefile           = generate-makefile
-# exports.generate-makefile-ext       = generate-makefile-ext
-# exports.generate-makefile-config    = generate-makefile-config
-exports.make-ps                     = generate-makefile-config-ps
-exports.all                         = all 
+   
+    plugins.output-translations(path-system-options)
+
+    o help()
+    
+    it 'Installs a link globally on this machine', { with-target: "npm-install" }, ->
+        m "Remember to do a `npm link pkg_name` in the"
+        m "directory of the modules that are going to use this."
+        x "npm link ."
+
+    p "npm patch"
+    o npm-git-action('patch')
+    
+    p "npm minor"
+    o npm-git-action('minor')
+    
+    p "npm major"
+    o npm-git-action('major')
+    
+    it 'Commits changes to git', { with-target: "npm-commit"}, ->
+        x "git commit -a"
+    
+    it 'merges changes into master and publish', { with-target: "npm-finalize"}, ->
+        x "git checkout master"
+        x "git merge development"
+        x "npm publish ."
+
+    it 'cleanup all files in build and deploy', {with-target: "distclean"}, ->
+        x "-rm -rf #{build-dir}"
+        x "-rm -rf #{deploy-dir}"
+        x "-rm -f ./.client-changed"
+        x "-rm -f ./.recompile-all"
+        x "-rm -f ./.watches.pid"
+    
+    it 'cleanup ', {with-target: "clean"}, ->
+        x "-rm -rf #{build-dir}"
+        x "-rm -rf #{deploy-dir}"
+ 
+   
+exports.wMake      = generate-makefile-config-ps
+exports.simpleMake = generate-makefile-config-ps({})
+exports.all        = all 
+exports.plugins    = plugins
+exports.hooks      = hooks
 
 
 

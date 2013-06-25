@@ -1,6 +1,6 @@
 #!/usr/bin/env lsc
 
-{ make-ps, all } = require '../src/lakefile'
+{ simple-make, all } = require '../src/lakefile'
 
 ## Lakefile starts here.
 my-files = [ { files-of-type: \coffee,  in: "./html/app" }
@@ -90,7 +90,7 @@ files =
         additional-commands: additional-commands 
         depth: 3
                      
-make-ps( {}, files )
+simple-make( files )
 
 
 
