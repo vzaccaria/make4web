@@ -164,7 +164,6 @@ git-action = (action) ->
     #{echo "Update version, commit and tag the current branch"}
     #{echo "Does not publish to the npm repository."}
     \t npm version #action 
-    \t git commit -a
     \t git push
     """
     
