@@ -63,17 +63,21 @@ sensitive-dirs = (files, n) ->
 tag = 'lake'
 
 watch = (file, command) ->
-    "watchman -w #file \'#{command}\' & " + 'echo "$$!" >> "./.watches.pid"'
+    "@watchman -w #file \'#{command}\' 1>&2 > /dev/null & " + 'echo "$$!" >> "./.watches.pid"'
     
 nodemon = (file, command) ->
-    "nodemon -q #file & " + 'echo "$$!" >> "./.watches.pid"'
+    "@nodemon -q #file & " + 'echo "$$!" >> "./.watches.pid"'
 
 watch-w-rate = (file, command, rate) ->
-    "watchman -r #rate -w #file \'#{command}\' & " + 'echo "$$!" >> "./.watches.pid"'
+    "@watchman -r #rate -w #file \'#{command}\' 1>&2 > /dev/null & " + 'echo "$$!" >> "./.watches.pid"'
 
 serve = (directory) ->
     
 
+echo =  (stepname, level=0) ->
+    lvs = [ ' ' for e from 1 to level*2 ] * ''
+    "\t @echo \' #{lvs}#{mprint(stepname)}\' 1>&2"
+    
 echo-step = (stepname, level=0) ->
     lvs = [ ' ' for e from 1 to level*2 ] * ''
     "\t @echo '' \n\t @echo \' #{lvs}#{mprint(stepname)}\' 1>&2"
@@ -137,16 +141,16 @@ help = ->
 npm-git-action = (action) ->
     """
     npm-prepare-#action:
-    #{echo-step "Warning - This is going to tag the current dev. branch and merge it to master."}
-    #{echo-step "The tag will be brought to the master branch."}
-    #{echo-step "After this action, do `make npm-commit` and `make npm-finalize` to "}
-    #{echo-step "Publish to the npm repository."}
+    #{echo "Warning - This is going to tag the current dev. branch and merge it to master."}
+    #{echo "The tag will be brought to the master branch."}
+    #{echo "After this action, do `make npm-commit` and `make npm-finalize` to "}
+    #{echo "Publish to the npm repository."}
     \t git checkout development
     \t npm version #action 
 
     npm-#action:
-    #{echo-step "Warning - This is going to tag the current dev. branch and merge it to master."}
-    #{echo-step "The tag will be brought to the master branch and the package will be published on npm."}
+    #{echo "Warning - This is going to tag the current dev. branch and merge it to master."}
+    #{echo "The tag will be brought to the master branch and the package will be published on npm."}
     \t git checkout development
     \t npm version #action 
     \t make npm-commit
@@ -344,11 +348,15 @@ class hooks-data
         
     execute-hooks: (phase) ~>
         for h in @hooks
-            if h.phase == phase
-                for file in @big-list-of-files 
-                    if h.predicate(file)
-                        h.action(file, path-system)
-    
+            if h.predicate?
+                if h.phase == phase
+                    for file in @big-list-of-files 
+                        if h.predicate(file)
+                            h.action(file, path-system)
+            else
+                if h.phase == phase
+                    h.action(path-system)
+        
     get-watch-names: ~>
         @big-list-of-files |> filter (-> it?.watch-name?) |> map (.watch-name)
    
@@ -361,16 +369,16 @@ hooks.add-hook '_deploy', -> (it?.root? and it.root), (file, path-system) ->
     x "install -m 555 #{file.build-name} #{path-system.client-dir}"
 
 hooks.add-hook 'server',  -> (it?.main? and it.main), (file, path-system) ->
-    x nodemon("#{path-system.server-dir}/#{file.dst-name}")
+    x nodemon("#{path-system.server-dir}/#{file.dst-name |> trim }")
 
 hooks.add-hook 'server',  -> (it?.test? and it.test), (file, path-system) ->
-    x watch-w-rate('./client-changed', 'mocha #{path-system.server-dir}/#{file.dst-name} --reporter spec', "3s")
+    x watch-w-rate('./.client-changed', "make test", "3s")
    
-hooks.add-hook 'server',  -> (it?.root? and it.root), (file, path-system) ->
+hooks.add-hook 'server',  -> (it?.serve? and it.serve), (file, path-system) ->
     x serve(path-system.client-dir)
 
 hooks.add-hook 'test', -> (it?.test? and it.test), (file, path-system) ->
-    x "mocha #{path-system.server-dir}/#{file.dst-name} --reporter spec"
+    x "mocha #{path-system.server-dir}/#{file.dst-name |> trim} --reporter spec"
     
 
 class translation-plugins
@@ -387,7 +395,7 @@ class translation-plugins
     output-specific-translation: (s-name, d-name, dependencies, command, path-system) ~~>
        
         p "Converting from #{s-name} to #{d-name}"  
-        o "#{path-system.build-dir}/#{d-name}: #s-name #dependencies"
+        o "#{d-name}: #s-name #dependencies"
         x "#{command('$<', '$@', '$^', '$(BUILD_DIR)')}"       
     
     add-translation: (s-ext, d-ext, command) ~>
@@ -395,23 +403,24 @@ class translation-plugins
   
     add-specific-translation: (s-name, d-name, dependencies, command) ~>
         @plugins.push(@output-specific-translation(s-name, d-name, dependencies, command))
-          
+        
+    output-default-translations: ~>
+        plugins.add-translation(\ls,     \js,   (source-name, dest-name, depencencies, build-dir) -> "lsc --output #{build-dir} -c #{source-name}")      
+        plugins.add-translation(\coffee, \js,   (source-name, dest-name, depencencies, build-dir) -> "coffee -b -l --output #{build-dir} #{source-name}")      
+        plugins.add-translation(\jade,   \html, (source-name, dest-name, depencencies, build-dir) -> "@jade -P --out #{build-dir} #{source-name}")      
+        plugins.add-translation(\styl,   \css,  (source-name, dest-name, depencencies, build-dir) -> "stylus $< -o #{build-dir}")     
+        plugins.add-translation(\less,   \css,  (source-name, dest-name, depencencies, build-dir) -> "lessc --verbose #{source-name} > #{dest-name}" )
+        
+        for c in [ \js \css \svg ]
+            plugins.add-translation(c, c, (source-name, dest-name, depencencies, build-dir) -> "cp #{source-name} #{dest-name}")   
+    
     output-translations: (path-system) ~>
+        @output-default-translations()
         for p in @plugins 
             p(path-system)
         
 
 plugins = new translation-plugins()
-
-plugins.add-translation(\ls,     \js, (source-name, dest-name, depencencies, build-dir) -> "lsc --output #{build-dir} -c #{source-name}")      
-plugins.add-translation(\coffee, \js, (source-name, dest-name, depencencies, build-dir) -> "coffee -b -l --output #{build-dir} #{source-name}")      
-plugins.add-translation(\jade, \html, (source-name, dest-name, depencencies, build-dir) -> "@jade -P --out #{build-dir}")      
-plugins.add-translation(\styl,  \css, (source-name, dest-name, depencencies, build-dir) -> "stylus $< -o #{build-dir}")      
-plugins.add-translation(\less, \css,  (source-name, dest-name, depencencies, build-dir) -> "lessc --verbose #{source-name} > #{dest-name}" )
-
-
-for c in [ \js \css \svg ]
-    plugins.add-translation(c, c,     (source-name, dest-name, depencencies, build-dir) -> "cp #{source-name} #{dest-name}")      
 
 hooks.add-hook '_build', -> (it?.include? and it.include), (file, path-system) ->
     plugins.add-specific-translation(file.name, file.build-name, file.deps,  (source-name, dest-name, depencencies, build-dir) -> 
@@ -424,7 +433,9 @@ generate-makefile-ext = ( path-system-options, files ) ->
     { client-js: cf, vendor-js: vf, server-js: sf, client-css: cs }                     = files
     { client-html: ch, client-img: im, client-fonts: fo, depth: dp }                    = files 
     { trigger-files:  trigger-files, additional-commands: additional-commands }         = files
-   
+
+    it 'deploy all targets', {with-target: \all }, -> 
+        x 'make deploy'   
     
     reset-targets()
     hooks.init-hooks-data(cf, sf, vf, cs, ch)
@@ -435,18 +446,11 @@ generate-makefile-ext = ( path-system-options, files ) ->
     collect-targets(from-source-list: cs, into-target-variable: "client css",           build-dir: build-dir,  final-type: \css,  into-file:       "#build-dir/client.css")
     collect-targets(from-source-list: ch, into-target-variable: "client html",          build-dir: build-dir,  final-type: \html)
   
-  
-    it 'deploys all targets', {with-target: \all }, -> 
-        x 'make deploy'
-     
-    task with-name: "deploy",  step-list: ["pre-deploy", "build", "_deploy", "post-deploy"]
-    task with-name: "build",   step-list: ["pre-build", "_build"]
-
-    it 'creates temporary directories', {with-target: "pre-build"}, ->
+    it 'create temporary directories', {with-target: "pre-build"}, ->
         x "mkdir -p #build-dir"
    
    
-    it 'creates deploy directories', {with-target: "pre-deploy"}, ->
+    it 'create deploy directories', {with-target: "pre-deploy"}, ->
         x "mkdir -p #deploy-dir" 
         x "mkdir -p #server-dir"        unless not sf?
         x "mkdir -p #client-dir"        unless not cf? and not cs? and not im? and not fo? and not ch?
@@ -456,7 +460,7 @@ generate-makefile-ext = ( path-system-options, files ) ->
         x "mkdir -p #client-dir-fonts"  unless not fo?
         x "mkdir -p #client-dir/html"   unless not ch?
 
-    it 'deploys files', {with-target: "_deploy"}, ->
+    it 'deploy files', {with-target: "_deploy"}, ->
         foreach-file-in("server sources",   (file) -> "install -m 555 #file #{server-dir}") unless not sf?
         foreach-file-in("client html",      (file) -> "install -m 555 #file #{client-dir}/html") unless not ch?
         
@@ -468,21 +472,24 @@ generate-makefile-ext = ( path-system-options, files ) ->
         hooks.execute-hooks("_deploy")
         m "Deployed" 
     
-    it 'post deploys files', {with-target: "post-deploy"}, ->
-        m "nothing to do in post-deploy"
+    it 'post deploy files', {with-target: "post-deploy"}, ->
+        hooks.execute-hooks("post-deploy")
 
-    it 'completes build', {with-target: '_build', dependencies: get-targets()}, ->
+    it 'build completed', {with-target: '_build', dependencies: get-targets()}, ->
         hooks.execute-hooks("_build")
 
     assets-targets ="#{getvar('client img') unless not im?} #{getvar('client fonts') unless not im?} "
-    
+   
+    task with-name: "deploy",  step-list: ["pre-deploy", "build", "_deploy", "post-deploy"]
+    task with-name: "build",   step-list: ["pre-build", "_build"]
+ 
     p "VPATH definition"    
     o "VPATH = #{ce}"
     
     for path in hooks.get-source-dirs() 
         o "#bt #path #ce"
        
-    it 'starts continuous build', {with-target: \server}, ->
+    it 'start continuous build', {with-target: \server}, ->
         x "@touch ./.client-changed"
         x "@touch ./.recompile-all"
         x "echo '' > ./.watches.pid"
@@ -553,6 +560,7 @@ exports.simpleMake = generate-makefile-config-ps({})
 exports.all        = all 
 exports.plugins    = plugins
 exports.hooks      = hooks
+exports.x          = x
 
 
 

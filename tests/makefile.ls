@@ -1,6 +1,6 @@
 #!/usr/bin/env lsc
 
-{ simple-make, all } = require '../src/lakefile'
+{ simple-make, all, hooks, x } = require '../src/lakefile'
 
 ## Lakefile starts here.
 my-files = [ { files-of-type: \coffee,  in: "./html/app" }
@@ -45,7 +45,7 @@ vendor-files = [ { name: "#vendor-src-dir/humanize.js", type: \js }
 
 server-files = [ { name: "./src/srv-session/broker.ls",         type: \ls}
                  { name: "./src/srv-session/backtest.ls",       type: \ls}
-                 { name: "./src/srv-session/main.ls",           type: \ls, +main}
+                 { name: "./src/srv-session/main.ls",           type: \ls}
                  { name: "./src/srv-api/rest_api.ls" ,          type: \ls }
                  { name: "./src/srv-api/compile_api.ls",        type: \ls } 
                  { name: "./src/srv-api/test/test_db_api.ls",   type: \ls } 
@@ -73,11 +73,9 @@ font-files = [  { files-of-type: \woff, in: "./html/app/assets/font" }
                 { files-of-type: \svg,  in: "./html/app/assets/font" }
                 { files-of-type: \ttf,  in: "./html/app/assets/font" } ]
 
-additional-commands = """
-\t -mkdir -p deploy/static/data
-\t cp data/*.json deploy/static/data
-
-"""
+hooks.add-hook 'post-deploy', null, (path-system) ->
+    x "-mkdir -p #{path-system.client-dir}/data"
+    x "cp data/*.json #{path-system.client-dir}/data" 
 
 files = 
         client-js: my-files, 
@@ -87,7 +85,6 @@ files =
         client-img: img-files,
         client-fonts: font-files
         client-html: [ { name: "./html/app/index.jade", type: \jade, +root, -serve } ]
-        additional-commands: additional-commands 
         depth: 3
                      
 simple-make( files )
