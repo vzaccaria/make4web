@@ -524,8 +524,9 @@ generate-makefile-ext = ( path-system-options, files ) ->
         x watch './.recompile-all',  'make clean && make deploy; chromereload;'
         
         hooks.execute-hooks("server")
-        
-        map (-> x watch(it, 'touch ./recompile-all')) trigger-files unless not trigger-files?
+       
+        if trigger-files? 
+            map (-> x watch(it, 'touch ./.recompile-all')), trigger-files 
 
    
     it 'stops the continuous build', (with-target: \reverse), ->

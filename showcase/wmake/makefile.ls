@@ -3,6 +3,7 @@
 { simple-make, all, x, hooks, plugins} = require 'wmake'
 
 my-files = [
+    { name: "js/split.ls", type: \ls }
     { name: "build/temp-sources/init-page.ls", type: \ls }
 ]
 
@@ -22,13 +23,15 @@ pre-vendor-files = [
     "./assets/components/bootstrap/js/bootstrap-typeahead.js"
     "./assets/components/moment/moment.js"
     "./assets/components/showdown/src/showdown.js"
+    "./assets/components/highlightjs/highlight.pack.js"
+    "./assets/components/underscore.string/lib/underscore.string.js"
 ]
  
 vendor-files      = [ { name: s, type: \js } for s in pre-vendor-files ]
 css-files         = [ { name: "./assets/components/bootstrap/less/bootstrap.less", type: \less } 
                       { name: "./assets/components/bootstrap/less/responsive.less", type: \less } ]
-img-files         = [ { files-of-type: \png,  in: "./assets/img/backgrounds"} ]
-trigger-dir       = [ { files-of-type: \less, in: "./assets/components/bootstrap/less" } ]
+img-files         = [ { files-of-type: \png,  in: "./assets/img/backgrounds"} 
+                      { files-of-type: \png,  in: "./assets/img/my-icons"}]
 
 
 project-name      = "wmake"
@@ -57,7 +60,9 @@ files =
         client-img: img-files,
         silent: false,
         client-html: [ { name: "./assets/index.jade", type: \jade, +root, +serve} ] 
-        trigger-files: [ "./assets/components/bootstrap/less" ] 
+        trigger-files: [ "./assets/components/bootstrap/less",
+                         "./README.md",
+                         "./assets/css/final-touches.less" ] 
                      
 simple-make( files )
 

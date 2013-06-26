@@ -5262,6 +5262,15 @@ a.badge:focus {
 .affix {
   position: fixed;
 }
+.box img {
+  height: 80px;
+}
+.box p:first-child {
+  text-align: center;
+}
+.box h2 {
+  text-align: center;
+}
 /* Jumbotrons
 -------------------------------------------------- */
 /* Base class
@@ -5380,7 +5389,7 @@ a.badge:focus {
 .masthead {
   padding: 70px 0 80px;
   margin-bottom: 0;
-  color: #fff;
+  color: #333333;
 }
 .masthead h1 {
   font-size: 100px;

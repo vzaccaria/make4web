@@ -18,32 +18,43 @@
         <div class="container"></div>
       </div>
     </div>
-    <div class="jumbotron masthead"> 
+    <div class="masthead"> 
       <div class="container">     
         <h1>{{name}}</h1>
         <p>{{description}}</p><a href="github-mac://openRepo/https://github.com/vzaccaria/fluent-fsm" class="btn btn-small btn-success">Clone on Github</a>
       </div>
     </div>
+    <hr>
     <div class="container under-the-jumbotron">
-      <div id="chart" class="code"></div>
-      <div class="span8 offset2">
-        <div id="text"></div>
-        <hr>
-        <div class="footer">
-          <p>(c) 2013 - Vittorio Zaccaria - MIT License</p>
+      <div class="span12">
+        <div class="row">
+          <div class="span4 box">
+            <div id="text0"></div>
+          </div>
+          <div class="span4 box">
+            <div id="text1"></div>
+          </div>
+          <div class="span4 box">
+            <div id="text2"></div>
+          </div>
         </div>
+        <hr>
+        <div class="row">
+          <div class="span4">
+            <div id="text3"></div>
+          </div>
+          <div class="span8">
+            <div id="text4"></div>
+          </div>
+        </div>
+      </div>
+      <div class="span8 offset2"> 
+        <hr>
+        <p>(c) 2013 - Vittorio Zaccaria - MIT License
+        </p>
       </div>
     </div>
     <script src="js/vendor.js"></script>
     <script src="js/client.js"></script>
-    <script>
-      mcup = new eventMockup(333); 
-      vis = new fsmVisualizer(mcup.getEmitter());
-      mcup.runEvents(["II", "IS", "SS", "PS", "OS", "OP" ]);
-      
-      
-      
-      
-    </script>
   </body>
 </html>

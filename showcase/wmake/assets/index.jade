@@ -24,7 +24,7 @@ html(lang='en')
         .container
           
    
-    .jumbotron.masthead 
+    .masthead 
         .container      
               h1 {{name}}
               p {{description}}
@@ -33,22 +33,32 @@ html(lang='en')
 
     //- End: Exactly as bootstrap
 
-
+    hr
           
     .container.under-the-jumbotron
-        #chart.code
-        .span8.offset2
-          #text
-          hr 
-          .footer
-            p (c) 2013 - Vittorio Zaccaria - MIT License
+        .span12
+          .row
+            .span4.box
+              #text0
+            .span4.box
+              #text1
+            .span4.box
+              #text2
+          hr
+          .row
+             .span4
+              #text3
+             .span8
+              #text4
+                
+        .span8.offset2 
+         hr
+         p (c) 2013 - Vittorio Zaccaria - MIT License
+              //- .footer
           
     script(src="js/vendor.js")
     script(src="js/client.js")
-    script 
-      mcup = new eventMockup(333); 
-      vis = new fsmVisualizer(mcup.getEmitter());
-      mcup.runEvents(["II", "IS", "SS", "PS", "OS", "OP" ]);
+
 
 
 
