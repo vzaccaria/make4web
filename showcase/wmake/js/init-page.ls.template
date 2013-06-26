@@ -1,0 +1,11 @@
+
+
+
+text = '''
+__text__
+'''
+
+
+converter = new Showdown.converter()
+ht = converter.makeHtml(text)
+$(ht).appendTo("\#text")

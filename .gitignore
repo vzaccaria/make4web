@@ -12,3 +12,9 @@ x.mk
 test.mk
 
 npm-debug.log
+
+showcase/wmake/.client-changed
+
+showcase/wmake/.recompile-all
+
+showcase/wmake/.watches.pid

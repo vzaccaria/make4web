@@ -1,0 +1,269 @@
+{
+  "links": [
+    {
+      "from": "II",
+      "to": "SI",
+      "transition": "anEvent",
+      "source": "II",
+      "target": "SI",
+      "type": "anEvent"
+    },
+    {
+      "from": "IS",
+      "to": "SS",
+      "transition": "anEvent",
+      "source": "IS",
+      "target": "SS",
+      "type": "anEvent"
+    },
+    {
+      "from": "IP",
+      "to": "SP",
+      "transition": "anEvent",
+      "source": "IP",
+      "target": "SP",
+      "type": "anEvent"
+    },
+    {
+      "from": "SI",
+      "to": "PI",
+      "transition": "anEvent2",
+      "source": "SI",
+      "target": "PI",
+      "type": "anEvent2"
+    },
+    {
+      "from": "SS",
+      "to": "PS",
+      "transition": "anEvent2",
+      "source": "SS",
+      "target": "PS",
+      "type": "anEvent2"
+    },
+    {
+      "from": "SP",
+      "to": "PP",
+      "transition": "anEvent2",
+      "source": "SP",
+      "target": "PP",
+      "type": "anEvent2"
+    },
+    {
+      "from": "PI",
+      "to": "OI",
+      "transition": "anEvent3",
+      "source": "PI",
+      "target": "OI",
+      "type": "anEvent3"
+    },
+    {
+      "from": "PS",
+      "to": "OS",
+      "transition": "anEvent3",
+      "source": "PS",
+      "target": "OS",
+      "type": "anEvent3"
+    },
+    {
+      "from": "PP",
+      "to": "OP",
+      "transition": "anEvent3",
+      "source": "PP",
+      "target": "OP",
+      "type": "anEvent3"
+    },
+    {
+      "from": "PI",
+      "to": "II",
+      "transition": "anotherEvent",
+      "source": "PI",
+      "target": "II",
+      "type": "anotherEvent"
+    },
+    {
+      "from": "PS",
+      "to": "II",
+      "transition": "anotherEvent",
+      "source": "PS",
+      "target": "II",
+      "type": "anotherEvent"
+    },
+    {
+      "from": "PP",
+      "to": "II",
+      "transition": "anotherEvent",
+      "source": "PP",
+      "target": "II",
+      "type": "anotherEvent"
+    },
+    {
+      "from": "II",
+      "to": "IS",
+      "transition": "anotherEvent2",
+      "source": "II",
+      "target": "IS",
+      "type": "anotherEvent2"
+    },
+    {
+      "from": "SI",
+      "to": "SS",
+      "transition": "anotherEvent2",
+      "source": "SI",
+      "target": "SS",
+      "type": "anotherEvent2"
+    },
+    {
+      "from": "PI",
+      "to": "PS",
+      "transition": "anotherEvent2",
+      "source": "PI",
+      "target": "PS",
+      "type": "anotherEvent2"
+    },
+    {
+      "from": "OI",
+      "to": "OS",
+      "transition": "anotherEvent2",
+      "source": "OI",
+      "target": "OS",
+      "type": "anotherEvent2"
+    },
+    {
+      "from": "IS",
+      "to": "IP",
+      "transition": "anotherEvent3",
+      "source": "IS",
+      "target": "IP",
+      "type": "anotherEvent3"
+    },
+    {
+      "from": "SS",
+      "to": "SP",
+      "transition": "anotherEvent3",
+      "source": "SS",
+      "target": "SP",
+      "type": "anotherEvent3"
+    },
+    {
+      "from": "PS",
+      "to": "PP",
+      "transition": "anotherEvent3",
+      "source": "PS",
+      "target": "PP",
+      "type": "anotherEvent3"
+    },
+    {
+      "from": "OS",
+      "to": "OP",
+      "transition": "anotherEvent3",
+      "source": "OS",
+      "target": "OP",
+      "type": "anotherEvent3"
+    },
+    {
+      "from": "OP",
+      "to": "II",
+      "transition": "differentEvent",
+      "source": "OP",
+      "target": "II",
+      "type": "differentEvent"
+    },
+    {
+      "from": "OP",
+      "to": "OI",
+      "transition": "differentEvent2",
+      "source": "OP",
+      "target": "OI",
+      "type": "differentEvent2"
+    },
+    {
+      "from": "IP",
+      "to": "II",
+      "transition": "differentEvent2",
+      "source": "IP",
+      "target": "II",
+      "type": "differentEvent2"
+    },
+    {
+      "from": "SP",
+      "to": "SI",
+      "transition": "differentEvent2",
+      "source": "SP",
+      "target": "SI",
+      "type": "differentEvent2"
+    },
+    {
+      "from": "PP",
+      "to": "PI",
+      "transition": "differentEvent2",
+      "source": "PP",
+      "target": "PI",
+      "type": "differentEvent2"
+    }
+  ],
+  "transitions": [
+    "anEvent",
+    "anEvent2",
+    "anEvent3",
+    "anotherEvent",
+    "anotherEvent2",
+    "anotherEvent3",
+    "differentEvent",
+    "differentEvent2"
+  ],
+  "initial": "II",
+  "tcolor": {
+    "anEvent": {
+      "col": "lightgrey",
+      "dashed": false
+    },
+    "anEvent2": {
+      "col": "lightgrey",
+      "dashed": false
+    },
+    "anEvent3": {
+      "col": "lightgrey",
+      "dashed": false
+    },
+    "anotherEvent": {
+      "col": "lightgrey",
+      "dashed": false
+    },
+    "anotherEvent2": {
+      "col": "lightgrey",
+      "dashed": false
+    },
+    "anotherEvent3": {
+      "col": "lightgrey",
+      "dashed": false
+    },
+    "differentEvent": {
+      "col": "lightgrey",
+      "dashed": false
+    },
+    "differentEvent2": {
+      "col": "lightgrey",
+      "dashed": false
+    }
+  },
+  "scolor": {
+    "II": "#46a546",
+    "SI": "lightgrey",
+    "PI": "lightgrey",
+    "OI": "lightgrey",
+    "IS": "lightgrey",
+    "SS": "lightgrey",
+    "PS": "lightgrey",
+    "OS": "lightgrey",
+    "IP": "lightgrey",
+    "SP": "lightgrey",
+    "PP": "lightgrey",
+    "OP": "lightgrey",
+    "IC": "lightgrey",
+    "SC": "lightgrey",
+    "PC": "lightgrey",
+    "OC": "lightgrey",
+    "error": "indianred"
+  },
+  "name": "my fsm"
+}

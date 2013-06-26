@@ -62,17 +62,19 @@ sensitive-dirs = (files, n) ->
 
 tag = 'lake'
 
+save-pid = 'echo "$$!" >> "./.watches.pid"'
+
 watch = (file, command) ->
-    "@watchman -w #file \'#{command}\' & " + 'echo "$$!" >> "./.watches.pid"'
+    "@watchman -w #file \'#{command}\' & #save-pid "
     
 nodemon = (file, command) ->
-    "@nodemon -q #file & " + 'echo "$$!" >> "./.watches.pid"'
+    "@nodemon -q #file & #save-pid"
 
 watch-w-rate = (file, command, rate) ->
-    "@watchman -r #rate -w #file \'#{command}\' & " + 'echo "$$!" >> "./.watches.pid"'
+    "@watchman -r #rate -w #file \'#{command}\' & #save-pid"
 
 serve = (directory) ->
-    
+    "@serve #directory & #save-pid"
 
 echo =  (stepname, level=0) ->
     lvs = [ ' ' for e from 1 to level*2 ] * ''
@@ -459,6 +461,7 @@ generate-makefile-ext = ( path-system-options, files ) ->
   
     it 'create temporary directories', {with-target: "pre-build"}, ->
         x "@mkdir -p #build-dir"
+        hooks.execute-hooks("pre-build")
    
    
     it 'create deploy directories', {with-target: "pre-deploy"}, ->
@@ -470,6 +473,7 @@ generate-makefile-ext = ( path-system-options, files ) ->
         x "@mkdir -p #client-dir-img"    unless not im?
         x "@mkdir -p #client-dir-fonts"  unless not fo?
         x "@mkdir -p #client-dir/html"   unless not ch?
+        hooks.execute-hooks("pre-deploy")
 
     it 'deploy files', {with-target: "_deploy"}, ->
         foreach-file-in("server sources",   (file) -> "install -m 555 #file #{server-dir}") unless not sf?

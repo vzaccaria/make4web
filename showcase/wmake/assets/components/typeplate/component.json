@@ -1,0 +1,9 @@
+{
+  "name": "typeplate",
+  "version": "0.0.0",
+  "commit": "7ef06d3928454b1471bbde065969d0ec35cfdab0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/typeplate/typeplate-bower.git"
+  }
+}
