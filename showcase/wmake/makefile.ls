@@ -24,12 +24,14 @@ pre-vendor-files = [
     "./assets/components/moment/moment.js"
     "./assets/components/showdown/src/showdown.js"
     "./assets/components/highlightjs/highlight.pack.js"
+    "./assets/js/highlight.js/highlight.pack.js" 
     "./assets/components/underscore.string/lib/underscore.string.js"
 ]
  
 vendor-files      = [ { name: s, type: \js } for s in pre-vendor-files ]
 css-files         = [ { name: "./assets/components/bootstrap/less/bootstrap.less", type: \less } 
-                      { name: "./assets/components/bootstrap/less/responsive.less", type: \less } ]
+                      { name: "./assets/components/bootstrap/less/responsive.less", type: \less } 
+                      { name: "./assets/js/highlight.js/styles/zenburn.css", type: \css }]
 img-files         = [ { files-of-type: \png,  in: "./assets/img/backgrounds"} 
                       { files-of-type: \png,  in: "./assets/img/my-icons"}]
 

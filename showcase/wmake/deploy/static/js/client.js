@@ -5,9 +5,7 @@
   };
   renderText = function(text){
     var converter, textBoxes, index, txt, ht, results$ = [];
-    converter = new Showdown.converter({
-      extensions: ['prettify']
-    });
+    converter = new Showdown.converter();
     textBoxes = splitAtSeparator(text);
     for (index in textBoxes) {
       txt = textBoxes[index];

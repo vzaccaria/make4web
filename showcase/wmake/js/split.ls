@@ -4,7 +4,7 @@ split-at-separator = (text) ->
     window._.string.words(text, '---')
     
 render-text = (text) ->
-    converter   = new Showdown.converter(extensions: ['prettify'])
+    converter   = new Showdown.converter()
     text-boxes  = split-at-separator(text)
     for index, txt of text-boxes
         console.log "Rendering #txt"
