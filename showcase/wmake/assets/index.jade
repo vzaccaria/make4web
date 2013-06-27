@@ -26,8 +26,8 @@ html(lang='en')
    
     .masthead 
         .container      
-              h1 {{name}}
-              p {{description}}
+              h1 web-make 
+              p Generate a plain makefile for your web project 
               a.btn.btn-small.btn-success(href="github-mac://openRepo/https://github.com/vzaccaria/fluent-fsm") Clone on Github
 
 
@@ -49,7 +49,29 @@ html(lang='en')
              .span4
               #text3
              .span8
-              #text4
+              ul.nav.nav-tabs
+                li.active
+                  a(data-toggle="tab", href="#code") Coffeescript
+                li
+                  a(data-toggle="tab", href="#make") Makefile
+                li
+                  a(data-toggle="tab", href="#demo") Demo
+                  
+              div.tab-content(style="height: 320px;")
+                div.tab-pane.active#code
+                  #text4
+                div.tab-pane#make
+                  #text5
+                div.tab-pane#demo 
+                  p placeholder
+          hr
+          .row
+             .span4
+                #text6
+             .span8
+                #text7
+
+              //- #text4
                 
         .span8.offset2 
          hr

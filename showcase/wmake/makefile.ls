@@ -31,7 +31,7 @@ pre-vendor-files = [
 vendor-files      = [ { name: s, type: \js } for s in pre-vendor-files ]
 css-files         = [ { name: "./assets/components/bootstrap/less/bootstrap.less", type: \less } 
                       { name: "./assets/components/bootstrap/less/responsive.less", type: \less } 
-                      { name: "./assets/js/highlight.js/styles/zenburn.css", type: \css }]
+                      { name: "./assets/js/highlight.js/styles/github.css", type: \css }]
 img-files         = [ { files-of-type: \png,  in: "./assets/img/backgrounds"} 
                       { files-of-type: \png,  in: "./assets/img/my-icons"}]
 
@@ -45,7 +45,10 @@ plugins.add-specific-translation('js/init-page.ls.template', 'build/temp-sources
 hooks.add-hook 'pre-build', null, (path-system) ->
     x "mkdir -p ./build/temp-sources"
  
-
+hooks.add-hook 'post-deploy', null, (path-system) ->
+    x "rm -rf #{path-system.client-dir}/examples"
+    x "cp -R ./examples #{path-system.client-dir}/examples"
+    
 # hooks.add-hook 'post-deploy', null, (path-system) ->
     # x "./tools/deploy.coffee -s ./deploy/static -c #{__dirname} -w #{remote-site-path} deploy -v -e"
     
