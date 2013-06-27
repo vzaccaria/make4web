@@ -189,3 +189,147 @@ only screen and (     -o-min-device-pixel-ratio: 2/1) {
 .under-the-jumbotron {
     padding-top: 30px;
 }
+
+
+
+pre .string,pre .tag .value,pre .phpdoc,pre .tex .formula {
+    color: #d14;
+}
+code {
+    .method {
+        color: #0086b3;
+    }
+}
+pre .builtin,pre .built_in,pre .lisp .title {
+    color: #0086b3;
+}
+pre .symbol,pre .ruby .symbol .string,pre .ruby .symbol .keyword,pre .ruby .symbol .keymethods,pre .lisp .keyword,pre .tex .special,pre .input_number {
+    color: #990073;
+}
+pre {
+    .chunk {
+        color: #aaa;
+    }
+    .regexp {
+        color: #009926;
+    }
+    code {
+        display: block;
+        padding: 0.5em;
+        color: #000;
+    }
+    .tex {
+        .formula {
+            opacity: 0.5;
+        }
+    }
+    .deletion {
+        background: #fdd;
+    }
+    .diff {
+        .change {
+            background: #0086b3;
+        }
+    }
+    .addition {
+        background: #dfd;
+    }
+    .class {
+        color: #458;
+        font-weight: bold;
+    }
+}
+pre .attribute,pre .variable,pre .instancevar,pre .lisp .body {
+    color: #008080;
+}
+pre .tag,pre .tag .title,pre .rules .property,pre .django .tag .keyword {
+    color: #000080;
+    font-weight: normal;
+}
+pre .keyword,pre .css .rule .keyword,pre .winutils,pre .javascript .title,pre .lisp .title,pre .subst {
+    color: #000;
+}
+pre .preprocessor,pre .pi,pre .doctype,pre .shebang,pre .cdata {
+    color: #999;
+    font-weight: bold;
+}
+pre .javascript .title,pre .lisp .title,pre .subst {
+    font-weight: normal;
+}
+pre .title,pre .id {
+    color: #900;
+    font-weight: bold;
+}
+pre .number,pre .hexcolor {
+    color: #40a070;
+}
+pre .comment,pre .template_comment,pre .diff .header,pre .javadoc {
+    color: #d14;
+}
+pre .class .title,pre .haskell .label,pre .tex .command {
+    color: #458;
+    font-weight: bold;
+}
+
+
+.playterm_embed
+{
+  display: hidden;
+}
+
+.playterm_more
+{
+  display: hidden;
+}
+
+.playterm_transport {
+    display: hidden;
+}
+
+.pluginbutton {
+  display: hidden;
+}
+
+.playterm_transportbar {
+    display: hidden;
+}
+
+.playterm_skin {
+  display: hidden;
+}
+
+.playterm {
+    overflow:           hidden;
+    font-size:          @baseFontSize - 1;
+    font-family:        @monoFontFamily;
+    background-color:   @black;
+    margin:   0;
+    padding:  0;
+    .border-radius(6px);
+    pre 
+    {
+      .border-radius(0px);
+      line-height: @baseLineHeight - 3;
+    }
+}
+
+.playterm_button {
+    display: hidden;
+}
+
+// .playterm_more {
+//     height:18px;
+//     line-height:0px;
+//     padding:0;
+//     position:absolute;
+//     text-indent:15px;
+//     width:99px;
+//     cursor:pointer;
+// }
+// .pluginbutton:hover {
+//     background-color:#666;
+//     color:#FFF;
+// }
+
+
+

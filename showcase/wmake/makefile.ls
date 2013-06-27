@@ -26,12 +26,19 @@ pre-vendor-files = [
     "./assets/components/highlightjs/highlight.pack.js"
     "./assets/js/highlight.js/highlight.pack.js" 
     "./assets/components/underscore.string/lib/underscore.string.js"
+    "./js/player/player.js"
+]
+
+pre-vendor-coffee-files = [
+    "./js/player/player-vanilla.js.coffee"
 ]
  
 vendor-files      = [ { name: s, type: \js } for s in pre-vendor-files ]
+# vendor-files      = vendor-files.concat([ { name: s, type: \coffee } for s in pre-vendor-coffee-files ])
+
 css-files         = [ { name: "./assets/components/bootstrap/less/bootstrap.less", type: \less } 
                       { name: "./assets/components/bootstrap/less/responsive.less", type: \less } 
-                      { name: "./assets/js/highlight.js/styles/github.css", type: \css }]
+                      ]
 img-files         = [ { files-of-type: \png,  in: "./assets/img/backgrounds"} 
                       { files-of-type: \png,  in: "./assets/img/my-icons"}]
 
@@ -48,6 +55,8 @@ hooks.add-hook 'pre-build', null, (path-system) ->
 hooks.add-hook 'post-deploy', null, (path-system) ->
     x "rm -rf #{path-system.client-dir}/examples"
     x "cp -R ./examples #{path-system.client-dir}/examples"
+    
+    # x "cp js/player/player.js #{path-system.client-dir}/js"
     
 # hooks.add-hook 'post-deploy', null, (path-system) ->
     # x "./tools/deploy.coffee -s ./deploy/static -c #{__dirname} -w #{remote-site-path} deploy -v -e"
@@ -67,7 +76,7 @@ files =
         client-html: [ { name: "./assets/index.jade", type: \jade, +root, +serve} ] 
         trigger-files: [ "./assets/components/bootstrap/less",
                          "./README.md",
-                         "./assets/css/final-touches.less" ] 
+                         "./assets/css/final-touches.less" ]
                      
 simple-make( files )
 

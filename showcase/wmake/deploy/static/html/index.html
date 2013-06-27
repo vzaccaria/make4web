@@ -49,15 +49,20 @@
               <li><a data-toggle="tab" href="#make">Makefile</a></li>
               <li><a data-toggle="tab" href="#demo">Demo</a></li>
             </ul>
-            <div style="height: 320px;" class="tab-content">
+            <div style="height: 480px;" class="tab-content">
               <div id="code" class="tab-pane active">
                 <div id="text4"></div>
               </div>
               <div id="make" class="tab-pane">
                 <div id="text5"></div>
               </div>
-              <div id="demo" class="tab-pane"> 
-                <p>placeholder</p>
+              <div id="demo" class="tab-pane">
+                <div class="row">
+                  <div id="terminal" class="span6 size:80x24,file:/examples/simple/tty.json"></div>
+                  <div class="span1"> 
+                    <button onclick="playterm_player.togglePlay()" class="btn">Play </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -36,10 +36,10 @@ rg =    //
 replace-markdown-link-at = (text, cb) ->
     mt = rg.exec(text)
     if mt?
-        console.log JSON.stringify(mt, null, 4)
+        # console.log JSON.stringify(mt, null, 4)
         type = window._.string.trim(mt[2])
         link = window._.string.trim(mt[4])
-        console.log "`#type`"
+        # console.log "`#type`"
         data <~ $.get(link)
         new-text = """
         ```#{type}
@@ -59,7 +59,7 @@ check-this-index = (converter, index, txt) ->
     let index,txt 
         replace-markdown-link-at txt, (txt, is-code) ->
             ht = converter.makeHtml(txt)
-            console.log  "\#text#{index}"
+            # console.log  "\#text#{index}"
             $(ht).appendTo("\#text#{index}") 
             if is-code
                 $("\#text#{index}").each( (i, e) ->
@@ -70,5 +70,11 @@ render-text = (text) ->
     text-boxes  = split-at-separator(text)
     for index, txt of text-boxes
         check-this-index(converter, index, txt)
-            
+
+load-tty-recording = ->
+    data <~ $.get('/examples/simple/tty.json')
+    playterm_player.data = data 
+    playterm_player.init 'terminal'
+    
 window.render-text = render-text
+window.load-tty-recording = load-tty-recording

@@ -57,13 +57,16 @@ html(lang='en')
                 li
                   a(data-toggle="tab", href="#demo") Demo
                   
-              div.tab-content(style="height: 320px;")
+              div.tab-content(style="height: 480px;")
                 div.tab-pane.active#code
                   #text4
                 div.tab-pane#make
                   #text5
-                div.tab-pane#demo 
-                  p placeholder
+                div.tab-pane#demo
+                  .row
+                    .span6#terminal(class="size:80x24,file:/examples/simple/tty.json")
+                    .span1 
+                      button.btn(onclick="playterm_player.togglePlay()") Play 
           hr
           .row
              .span4
