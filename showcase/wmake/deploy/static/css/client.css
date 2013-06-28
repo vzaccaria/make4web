@@ -5382,7 +5382,7 @@ a.badge:focus {
   right: 0;
   bottom: 0;
   left: 0;
-  background: url(/img/paper.png) repeat center center;
+  background: url(img/paper.png) repeat center center;
   opacity: .4;
 }
 @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio: 2), only screen and (-o-min-device-pixel-ratio: 2/1) {

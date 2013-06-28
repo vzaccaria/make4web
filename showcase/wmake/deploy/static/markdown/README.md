@@ -1,5 +1,5 @@
 
-<img src="/img/512Px-161.png" />
+<img src="img/512Px-161.png" />
 
 ## It just works
 
@@ -8,7 +8,7 @@ No need to install any `*-contrib-*` package to use it.
 Only GNU Make is required.
 
 ---
-<img src="/img/512Px-204.png" />
+<img src="img/512Px-204.png" />
 
 ## Choose your style
 
@@ -16,7 +16,7 @@ You can use declarative style for common tasks and fine-tune your makefile with 
 
 ---
 
-<img src="/img/512Px-478.png" />
+<img src="img/512Px-478.png" />
 
 ## Free yourself
 
@@ -40,9 +40,9 @@ The following targets are supported:
 * `make reverse ` Stops the server started with the previous command
 
 ---
-[read coffeescript](/examples/simple/simple.cs)
+[read coffeescript](examples/simple/simple.cs)
 ---
-[read makefile](/examples/simple/makefile)
+[read makefile](examples/simple/makefile)
 ---
 
 ## Installation

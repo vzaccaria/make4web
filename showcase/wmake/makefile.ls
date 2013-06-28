@@ -57,13 +57,10 @@ plugins.copy-subtree-into './examples', (path-system) ->
 plugins.copy-extension \md, (path-system) -> 
   "#{path-system.client-dir}/markdown"
 
-# hooks.add-hook 'post-deploy', null, (path-system) ->
-    # x "./tools/deploy.coffee -s ./deploy/static -c #{__dirname} -w #{remote-site-path} deploy -v -e"
+hooks.add-hook 'post-deploy', null, (path-system) ->
+    x "./tools/deploy.coffee -s ./deploy/static -c #{__dirname} -w #{remote-site-path} deploy -v"
     
-# other-targets = '''
-# js/init-page.ls: js/init-page.ls.template ./README.md
-# \t ./tools/insert.ls ./js/init-page.ls.template -s ./README.md > ./js/init-page.ls
-# '''
+
 
 
 files = 
