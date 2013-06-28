@@ -35,11 +35,9 @@
         var ht;
         ht = converter.makeHtml(txt);
         $(ht).appendTo("#text" + index);
-        if (isCode) {
-          return $("#text" + index).each(function(i, e){
-            return hljs.highlightBlock(e, '    ');
-          });
-        }
+        return $("pre code").each(function(i, e){
+          return hljs.highlightBlock(e, '    ');
+        });
       });
     }.call(this, index, txt));
   };

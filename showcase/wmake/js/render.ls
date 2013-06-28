@@ -67,8 +67,7 @@ check-this-index = (converter, index, txt) ->
             ht = converter.makeHtml(txt)
             # console.log  "\#text#{index}"
             $(ht).appendTo("\#text#{index}") 
-            if is-code
-                $("\#text#{index}").each( (i, e) ->
+            $("pre code").each( (i, e) ->
                  hljs.highlightBlock(e, '    '))
    
 render-text = (text) ->
