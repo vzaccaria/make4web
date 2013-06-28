@@ -420,26 +420,30 @@ class translation-plugins
         p "Converting from #{s-name} to #{d-name}"  
         o "#{d-name}: #s-name #dependencies"
         x "#{command('$<', '$@', '$^', '$(BUILD_DIR)')}"       
+   
+    output-build-translation: (s-ext, d-ext, command, path-system) ~~>
+       
+        p "Converting from #{s-ext} to #{d-ext}"  
+        o "#{path-system.build-dir}/%.#{d-ext}: #{path-system.build-dir}/%.#{s-ext}"
+        x "#{command('$<', '$@', '$^', '$(BUILD_DIR)')}"
     
     add-translation: (s-ext, d-ext, command) ~>
         @plugins.push(@output-translation(s-ext, d-ext, command))
+        @translation-pairs[s-ext] = d-ext
+        
+    add-build-translation: (s-ext, d-ext, command) ~>
+        @plugins.push(@output-build-translation(s-ext, d-ext, command))
         @translation-pairs[s-ext] = d-ext
   
     add-specific-translation: (s-name, d-name, dependencies, command) ~>
         @plugins.push(@output-specific-translation(s-name, d-name, dependencies, command))
         
-    output-default-translations: ~>
-        plugins.add-translation(\ls,     \js,   (source-name, dest-name, depencencies, build-dir) -> "lsc --output #{build-dir} -c #{source-name}")      
-        plugins.add-translation(\coffee, \js,   (source-name, dest-name, depencencies, build-dir) -> "coffee -b -l --output #{build-dir} #{source-name}")      
-        plugins.add-translation(\jade,   \html, (source-name, dest-name, depencencies, build-dir) -> "@jade -P --out #{build-dir} #{source-name}")      
-        plugins.add-translation(\styl,   \css,  (source-name, dest-name, depencencies, build-dir) -> "stylus $< -o #{build-dir}")     
-        plugins.add-translation(\less,   \css,  (source-name, dest-name, depencencies, build-dir) -> "lessc --verbose #{source-name} > #{dest-name}" )
-        
-        for c in [ \js \css \svg ]
-            plugins.add-translation(c, c, (source-name, dest-name, depencencies, build-dir) -> "cp #{source-name} #{dest-name}")   
+    add-default-translations: ~>
+        {augment-plugins} = require('./plugins')
+        augment-plugins(@)
     
     output-translations: (path-system) ~>
-        @output-default-translations()
+        @add-default-translations()
         for p in @plugins 
             p(path-system)
             
@@ -449,7 +453,6 @@ class translation-plugins
              x "mkdir -p #{into-dir(path-system)}"
              x "cp #{path-system.build-dir}/*.#{ext} #{into-dir(path-system)}"
 
-   
     copy-extension: (ext, into-dir) ~>
         plugins.add-translation(ext, ext, (source-name, dest-name, depencencies, build-dir) ~> "cp #{source-name} #{dest-name}")
         @deploy-extension-into(ext, into-dir)
@@ -502,9 +505,14 @@ generate-makefile-ext = ( path-system-options, files ) ->
         foreach-file-in("server sources",   (file) -> "install -m 555 #file #{server-dir}") unless not sf?
         foreach-file-in("client html",      (file) -> "install -m 555 #file #{client-dir}/html") unless not ch?
         
-        install-file name: "#{build-dir}/client.js",    derived-from-list: cf, final-directory: "#client-dir/js" 
-        install-file name: "#{build-dir}/vendor.js",    derived-from-list: vf, final-directory: "#client-dir/js" 
-        install-file name: "#{build-dir}/client.css",   derived-from-list: cs, final-directory: "#client-dir/css"
+        install-file name: "#{build-dir}/client.js",        derived-from-list: cf, final-directory: "#client-dir/js" 
+        install-file name: "#{build-dir}/client.css",       derived-from-list: cs, final-directory: "#client-dir/css"
+        install-file name: "#{build-dir}/vendor.js",        derived-from-list: vf, final-directory: "#client-dir/js" 
+        
+        install-file name: "#{build-dir}/client.min.js",    derived-from-list: cf, final-directory: "#client-dir/js"  if opt?.minify-js?
+        install-file name: "#{build-dir}/vendor.min.js",    derived-from-list: cf, final-directory: "#client-dir/js"  if opt?.minify-js?
+        install-file name: "#{build-dir}/client.min.css",   derived-from-list: cs, final-directory: "#client-dir/css" if opt?.minify-css?
+        
         copy-targets from-source-list: im, copy-into-dir: client-dir-img 
         copy-targets from-source-list: fo, copy-into-dir: client-dir-fonts
         hooks.execute-hooks("_deploy")
@@ -514,7 +522,12 @@ generate-makefile-ext = ( path-system-options, files ) ->
         hooks.execute-hooks("post-deploy")
         m "post deploy done"
 
-    it 'build completed', {with-target: '_build', dependencies: get-targets()}, ->
+    additional-dependencies = 
+        | opt?.minify-js?    => "#build-dir/client.min.js #build-dir/vendor.min.js"
+        | opt?.minify-css?   => "#build-dir/client.min.css"
+        | otherwise => "" 
+        
+    it 'build completed', {with-target: '_build', dependencies: get-targets()+" #additional-dependencies"}, ->
         hooks.execute-hooks("_build")
         m "build completed"
 

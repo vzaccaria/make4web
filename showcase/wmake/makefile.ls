@@ -82,7 +82,7 @@ files =
         vendor-js:  vendor-files, 
         client-css: css-files, 
         client-img: img-files,
-        silent: false,
+        
         client-html: [ { name: "./assets/views/index.jade", type: \jade, +root, +serve}
                        { name: "./assets/views/examples.jade", type: \jade, +root     } ] 
         
@@ -93,6 +93,7 @@ files =
         trigger-files: [ "./assets/components/bootstrap/less",
                          "./assets/views/default.jade"
                          "./assets/css/final-touches.less" ]
+        options: { +minify-js }
                      
 simple-make( files )
 

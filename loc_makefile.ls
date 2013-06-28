@@ -2,5 +2,17 @@
 
 require! './src/lakefile'.w-make
 
-w-make({ deploy-dir: 'lib', local-server-dir: '.', local-client-dir: '.'}, {server-js: [ { name: "./src/lakefile.ls", type: \ls }] } )
+regular-system = {
+    deploy-dir: 'lib'
+    local-server-dir: '.'
+    local-client-dir: '.'
+}
+
+lib-files = [
+   { name: "./src/lakefile.ls", type: \ls }
+   { name: "./src/plugins.ls",  type: \ls}
+]
+    
+
+w-make(regular-system, { server-js: lib-files } )
 
