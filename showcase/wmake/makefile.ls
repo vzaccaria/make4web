@@ -56,13 +56,8 @@ plugins.add-translation('tty', 'tty.json',
 
 plugins.deploy-extension-into('tty.json', (path-system) -> "#{path-system.client-dir}/termcasts")
 
-hooks.add-hook '_deploy', null, (path-system) ->
-    x "@mkdir -p #{path-system.client-dir}/examples"
-    x "cp -R ./examples/* #{path-system.client-dir}/examples"
+plugins.copy-subtree-into './examples' 'static/examples'
 
-hooks.add-hook 'pre-deploy', null, (path-system) ->
-    x "@mkdir -p #{path-system.client-dir}/markdown"
-       
 plugins.copy-extension(\md, (path-system) -> "#{path-system.client-dir}/markdown")
 
     # x "cp js/player/player.js #{path-system.client-dir}/js"
