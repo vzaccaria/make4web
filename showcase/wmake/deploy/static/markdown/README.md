@@ -65,4 +65,3 @@ If you need any features that are not in the current version such as:
 just drop me a message or send me a pull request and I will release a new version of the tool within 1 or 2 days.
 
 
----

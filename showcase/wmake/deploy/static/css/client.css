@@ -5271,6 +5271,12 @@ a.badge:focus {
 .box h2 {
   text-align: center;
 }
+.carousel img {
+  width: 320px;
+}
+.carousel h2 {
+  text-align: center;
+}
 /* Jumbotrons
 -------------------------------------------------- */
 /* Base class
