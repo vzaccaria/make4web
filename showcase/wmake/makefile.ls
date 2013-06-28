@@ -28,12 +28,8 @@ pre-vendor-files = [
     "./js/player/player.js"
 ]
 
-pre-vendor-coffee-files = [
-    "./js/player/player-vanilla.js.coffee"
-]
  
 vendor-files      = [ { name: s, type: \js } for s in pre-vendor-files ]
-# vendor-files      = vendor-files.concat([ { name: s, type: \coffee } for s in pre-vendor-coffee-files ])
 
 css-files         = [ { name: "./assets/components/bootstrap/less/bootstrap.less", type: \less } 
                       { name: "./assets/components/bootstrap/less/responsive.less", type: \less } 
@@ -47,24 +43,19 @@ img-files         = [ { files-of-type: \png,  in: "./assets/img/backgrounds"}
 project-name      = "wmake"
 remote-site-path  = "./#project-name"
 
-# plugins.add-specific-translation('js/init-page.ls.template', 'build/temp-sources/init-page.ls', './README.md', 
-#     (source-name, dest-name, depencencies, build-dir) -> "./tools/insert.ls #{source-name} -s ./README.md > #{dest-name}")
-
     
 plugins.add-translation('tty', 'tty.json', 
-    (source-name, dest-name, depencencies, build-dir) -> "perl -Itools/jsttyplay-master tools/jsttyplay-master/preprocess.pl #{source-name} #{dest-name}")
+    (source-name, dest-name, depencencies, build-dir) -> 
+      "perl -Itools/jsttyplay-master tools/jsttyplay-master/preprocess.pl #{source-name} #{dest-name}")
 
-plugins.deploy-extension-into('tty.json', (path-system) -> "#{path-system.client-dir}/termcasts")
+plugins.deploy-extension-into 'tty.json', (path-system) -> 
+    "#{path-system.client-dir}/termcasts"
 
-plugins.copy-subtree-into './examples' 'static/examples'
-
-plugins.copy-extension(\md, (path-system) -> "#{path-system.client-dir}/markdown")
-
-    # x "cp js/player/player.js #{path-system.client-dir}/js"
+plugins.copy-subtree-into './examples', (path-system) -> 
+    "#{path-system.client-dir}/examples"
     
-# hooks.add-hook 'post-deploy', null, (path-system) ->
-#     x "rm -rf #{path-system.client-dir}/examples"
-#     x "cp -R ./examples #{path-system.client-dir}/examples"
+plugins.copy-extension \md, (path-system) -> 
+  "#{path-system.client-dir}/markdown"
 
 # hooks.add-hook 'post-deploy', null, (path-system) ->
     # x "./tools/deploy.coffee -s ./deploy/static -c #{__dirname} -w #{remote-site-path} deploy -v -e"

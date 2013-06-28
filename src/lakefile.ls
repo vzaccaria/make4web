@@ -455,8 +455,8 @@ class translation-plugins
 
     copy-subtree-into: (subtree, into-dir) ~>
        hooks.add-hook '_deploy', null, (path-system) ->
-            x "@mkdir -p #{path-system.deploy-dir}/#into-dir"
-            x "cp -R #subtree/* #{path-system.deploy-dir}/#into-dir" 
+            x "@mkdir -p #{path-system.deploy-dir}/#{into-dir(path-system)}"
+            x "cp -R #subtree/* #{path-system.deploy-dir}/#{into-dir(path-system)}" 
     
     copy-extension: (ext, into-dir) ~>
         plugins.add-translation(ext, ext, (source-name, dest-name, depencencies, build-dir) ~> "cp #{source-name} #{dest-name}")
