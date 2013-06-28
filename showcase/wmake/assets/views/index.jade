@@ -1,0 +1,82 @@
+
+extends default
+prepend content 
+
+    .navbar.navbar-inverse.navbar-fixed-top
+      .navbar-inner
+        .container
+          ul.nav.pull-right 
+            li.active 
+              a(href="/index.html") Home
+            li 
+              a(href="/examples.html") Examples
+            li 
+              a(href="/api.html") API   
+              
+    .masthead.jumbotron 
+        .container      
+              h1 web-make 
+              p Generate a plain makefile for your web project 
+              a.btn.btn-small.btn-success(href="github-mac://openRepo/https://github.com/vzaccaria/fluent-fsm") Clone on Github
+
+
+    //- End: Exactly as bootstrap
+
+    hr
+          
+    .container.under-the-jumbotron
+        .span12
+          .row
+            .span4.box
+              #text0
+            .span4.box
+              #text1
+            .span4.box
+              #text2
+          hr
+          .row
+             .span4
+              #text3
+             .span8
+              ul.nav.nav-tabs
+                li.active
+                  a(data-toggle="tab", href="#code") Coffeescript
+                li
+                  a(data-toggle="tab", href="#make") Makefile
+                li
+                  a(data-toggle="tab", href="#demo") Demo
+                  
+              div.tab-content(style="height: 480px;")
+                div.tab-pane.active#code
+                  #text4
+                div.tab-pane#make
+                  #text5
+                div.tab-pane#demo
+                  .row
+                    .span6#terminal(class="size:80x24")
+                    .span1 
+                        button.btn.btn-small(onclick="playterm_player.togglePlay()") re/start 
+ 
+            hr
+          .row
+             .span4
+                #text6
+             .span8
+                #text7
+
+                //- #text4
+                
+ prepend post-init
+  script
+     window.loadTtyRecording('/termcasts/simple.tty.json', 'terminal');
+     window.renderTextAt('/markdown/README.md')
+                  
+
+            
+
+
+
+
+
+
+

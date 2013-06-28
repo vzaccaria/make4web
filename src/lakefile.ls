@@ -74,7 +74,7 @@ watch-w-rate = (file, command, rate) ->
     "@watchman -r #rate -w #file \'#{command}\' & #save-pid"
 
 serve = (directory) ->
-    "@serve #directory & #save-pid"
+    "@pushserve -P #directory & #save-pid"
 
 echo =  (stepname, level=0) ->
     lvs = [ ' ' for e from 1 to level*2 ] * ''
@@ -249,7 +249,7 @@ foreach-file-in-expression = (expression, cb) ->
         \t done 
         """ 
    
-collect-targets = ({build-dir, from-source-list, into-target-variable, into-file, final-type, description}) ->
+collect-targets = ({build-dir, from-source-list, into-target-variable, into-file, custom-type, final-type, description}) ->
   
        if from-source-list?
         
@@ -259,12 +259,22 @@ collect-targets = ({build-dir, from-source-list, into-target-variable, into-file
            str = "#{makeify into-target-variable}="
             
            for src in from-source-list 
+            
+                    
                 if src.name? 
+                    
+                    if custom-type? and custom-type and plugins.translation-pairs[src.type]
+                        final-type = plugins.translation-pairs[src.type]
+                        
                     src.dst-name    = src.name |> take-name |> change-type(src.type, final-type)
                     src.watch-name  = src.name 
                     src.dir-name    = src.name |> take-dir
                          
                 if src.files-of-type?
+                    
+                    if custom-type? and custom-type and plugins.translation-pairs[src.files-of-type]
+                        final-type = plugins.translation-pairs[src.files-of-type]
+
                     src.dst-name    = (all(files-of-type: src.files-of-type, in: src.in) |> change-type( src.files-of-type, final-type) |> take-name)
                     src.watch-name  = (src.in)
                     src.dir-name    = (src.in)
@@ -352,8 +362,8 @@ class hooks-data
         @hooks = []
         @big-list-of-files = []
     
-    init-hooks-data: (cf, sf, vf, cs, ch, im, fo) ~>
-        for l in [cf, sf, vf, cs, ch ]
+    init-hooks-data: (cf, sf, vf, cs, ch, ot) ~>
+        for l in [ot, ch, cs, cf, sf, vf ]
             @big-list-of-files = @big-list-of-files.concat(l)
     
     add-hook: (phase, predicate, action) ~>
@@ -393,11 +403,11 @@ hooks.add-hook 'server',  -> (it?.serve? and it.serve), (file, path-system) ->
 hooks.add-hook 'test', -> (it?.test? and it.test), (file, path-system) ->
     x "mocha #{path-system.server-dir}/#{file.dst-name |> trim} --reporter spec"
     
-
 class translation-plugins
     
-    ->
+    (@hooks) ->
         @plugins = []
+        @translation-pairs = {}
         
     output-translation: (s-ext, d-ext, command, path-system) ~~>
        
@@ -413,6 +423,7 @@ class translation-plugins
     
     add-translation: (s-ext, d-ext, command) ~>
         @plugins.push(@output-translation(s-ext, d-ext, command))
+        @translation-pairs[s-ext] = d-ext
   
     add-specific-translation: (s-name, d-name, dependencies, command) ~>
         @plugins.push(@output-specific-translation(s-name, d-name, dependencies, command))
@@ -431,9 +442,19 @@ class translation-plugins
         @output-default-translations()
         for p in @plugins 
             p(path-system)
-        
+            
+    deploy-extension-into: (ext, into-dir) ~>
+        console.log "\# Adding extension for #ext"
+        @hooks.add-hook '_deploy', null, (path-system) ~>
+             x "mkdir -p #{into-dir(path-system)}"
+             x "cp #{path-system.build-dir}/*.#{ext} #{into-dir(path-system)}"
 
-plugins = new translation-plugins()
+   
+    copy-extension: (ext, into-dir) ~>
+        plugins.add-translation(ext, ext, (source-name, dest-name, depencencies, build-dir) ~> "cp #{source-name} #{dest-name}")
+        @deploy-extension-into(ext, into-dir)
+
+plugins = new translation-plugins(hooks)
 
 hooks.add-hook '_build', -> (it?.include? and it.include), (file, path-system) ->
     plugins.add-specific-translation(file.name, file.build-name, file.deps,  (source-name, dest-name, depencencies, build-dir) -> 
@@ -444,20 +465,22 @@ generate-makefile-ext = ( path-system-options, files ) ->
 
     { build-dir, deploy-dir, server-dir, client-dir, client-dir-img, client-dir-fonts } = path-system-options
     { client-js: cf, vendor-js: vf, server-js: sf, client-css: cs }                     = files
-    { client-html: ch, client-img: im, client-fonts: fo, depth: dp }                    = files 
+    { client-html: ch, client-img: im, client-fonts: fo, options: opt, other: ot }      = files 
     { trigger-files:  trigger-files, additional-commands: additional-commands }         = files
 
     it 'deploy all targets', {with-target: \all }, -> 
         x 'make deploy'   
     
     reset-targets()
-    hooks.init-hooks-data(cf, sf, vf, cs, ch)
+    hooks.init-hooks-data(cf, sf, vf, cs, ch, ot)
    
+    collect-targets(from-source-list: ot, into-target-variable: "other",                build-dir: build-dir,  custom-type: true)
+    collect-targets(from-source-list: ch, into-target-variable: "client html",          build-dir: build-dir,  final-type: \html)
+    collect-targets(from-source-list: cs, into-target-variable: "client css",           build-dir: build-dir,  final-type: \css,  into-file:       "#build-dir/client.css")
     collect-targets(from-source-list: cf, into-target-variable: "client sources",       build-dir: build-dir,  final-type: \js,   into-file:       "#build-dir/client.js" )
     collect-targets(from-source-list: sf, into-target-variable: "server sources",       build-dir: build-dir,  final-type: \js)
     collect-targets(from-source-list: vf, into-target-variable: "vendor client sources",build-dir: build-dir,  final-type: \js,   into-file:       "#build-dir/vendor.js")
-    collect-targets(from-source-list: cs, into-target-variable: "client css",           build-dir: build-dir,  final-type: \css,  into-file:       "#build-dir/client.css")
-    collect-targets(from-source-list: ch, into-target-variable: "client html",          build-dir: build-dir,  final-type: \html)
+    
   
     it 'create temporary directories', {with-target: "pre-build"}, ->
         x "@mkdir -p #build-dir"
@@ -511,11 +534,11 @@ generate-makefile-ext = ( path-system-options, files ) ->
         x "@touch ./.client-changed"
         x "@touch ./.recompile-all"
         x "echo '' > ./.watches.pid"
-        
-        if not dp?
-            dp = 2
+       
+        opt         ?= {} 
+        opt.depth   ?= 2
             
-        to-be-watched = sensitive-dirs(hooks.get-watch-names(), dp)
+        to-be-watched = sensitive-dirs(hooks.get-watch-names(), opt.depth)
         
         for path in to-be-watched
             x watch(path, 'touch ./.client-changed')

@@ -3,8 +3,7 @@
 { simple-make, all, x, hooks, plugins} = require 'wmake'
 
 my-files = [
-    { name: "js/split.ls", type: \ls }
-    { name: "build/temp-sources/init-page.ls", type: \ls }
+    { name: "js/render.ls", type: \ls }
 ]
 
 pre-vendor-files = [
@@ -46,18 +45,29 @@ img-files         = [ { files-of-type: \png,  in: "./assets/img/backgrounds"}
 project-name      = "wmake"
 remote-site-path  = "./#project-name"
 
-plugins.add-specific-translation('js/init-page.ls.template', 'build/temp-sources/init-page.ls', './README.md', 
-    (source-name, dest-name, depencencies, build-dir) -> "./tools/insert.ls #{source-name} -s ./README.md > #{dest-name}")
+# plugins.add-specific-translation('js/init-page.ls.template', 'build/temp-sources/init-page.ls', './README.md', 
+#     (source-name, dest-name, depencencies, build-dir) -> "./tools/insert.ls #{source-name} -s ./README.md > #{dest-name}")
+
     
-hooks.add-hook 'pre-build', null, (path-system) ->
-    x "mkdir -p ./build/temp-sources"
- 
-hooks.add-hook 'post-deploy', null, (path-system) ->
-    x "rm -rf #{path-system.client-dir}/examples"
-    x "cp -R ./examples #{path-system.client-dir}/examples"
-    
+plugins.add-translation('tty', 'tty.json', 
+    (source-name, dest-name, depencencies, build-dir) -> "perl -Itools/jsttyplay-master tools/jsttyplay-master/preprocess.pl #{source-name} #{dest-name}")
+
+plugins.deploy-extension-into('tty.json', (path-system) -> "#{path-system.client-dir}/termcasts")
+
+hooks.add-hook '_deploy', null, (path-system) ->
+    x "cp -R ./examples/* #{path-system.client-dir}/examples"
+
+hooks.add-hook 'pre-deploy', null, (path-system) ->
+    x "@mkdir -p #{path-system.client-dir}/markdown"
+       
+plugins.copy-extension(\md, (path-system) -> "#{path-system.client-dir}/markdown")
+
     # x "cp js/player/player.js #{path-system.client-dir}/js"
     
+# hooks.add-hook 'post-deploy', null, (path-system) ->
+#     x "rm -rf #{path-system.client-dir}/examples"
+#     x "cp -R ./examples #{path-system.client-dir}/examples"
+
 # hooks.add-hook 'post-deploy', null, (path-system) ->
     # x "./tools/deploy.coffee -s ./deploy/static -c #{__dirname} -w #{remote-site-path} deploy -v -e"
     
@@ -73,9 +83,15 @@ files =
         client-css: css-files, 
         client-img: img-files,
         silent: false,
-        client-html: [ { name: "./assets/index.jade", type: \jade, +root, +serve} ] 
+        client-html: [ { name: "./assets/views/index.jade", type: \jade, +root, +serve}
+                       { name: "./assets/views/examples.jade", type: \jade, +root     } ] 
+        
+        other: [ { name: "./examples/simple/recordings/simple.tty", type: \tty }
+                 { name: "./docs/README.md",        type: \md } 
+                 { name: "./docs/examples.md",      type: \md }]
+        
         trigger-files: [ "./assets/components/bootstrap/less",
-                         "./README.md",
+                         "./assets/views/default.jade"
                          "./assets/css/final-touches.less" ]
                      
 simple-make( files )

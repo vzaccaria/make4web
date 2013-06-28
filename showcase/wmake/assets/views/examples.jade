@@ -1,0 +1,53 @@
+
+extends default
+prepend content 
+
+    .navbar.navbar-inverse.navbar-fixed-top
+      .navbar-inner
+        .container
+          ul.nav.pull-right 
+            li
+              a(href="/index.html") Home
+            li.active
+              a(href="/examples.html") Examples
+            li 
+              a(href="/api.html") API                 
+              
+    
+
+
+    //- End: Exactly as bootstrap
+
+    .container
+      .masthead 
+        h2 Examples 
+      hr
+      .row
+         .span4
+          #text0
+         //- .span8
+         //-  ul.nav.nav-tabs
+         //-    li.active
+         //-      a(data-toggle="tab", href="#code") Coffeescript
+         //-    li
+         //-      a(data-toggle="tab", href="#make") Makefile
+         //-    li
+         //-      a(data-toggle="tab", href="#demo") Demo
+              
+         //-  div.tab-content(style="height: 480px;")
+         //-    div.tab-pane.active#code
+         //-      #text2
+         //-    div.tab-pane#make
+         //-      #text3
+         //-     //- .footer
+          
+prepend post-init
+  script
+     window.renderTextAt('/markdown/examples.md')
+                  
+
+
+
+
+
+

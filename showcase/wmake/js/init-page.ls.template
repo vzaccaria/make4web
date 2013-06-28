@@ -7,4 +7,3 @@ __text__
 
 
 window.render-text(text)
-window.load-tty-recording()

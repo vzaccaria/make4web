@@ -1,6 +1,15 @@
 (function(){
-  var rg, replaceMarkdownLinkAt, splitAtSeparator, checkThisIndex, renderText, loadTtyRecording;
+  var rg, renderTextAt, replaceMarkdownLinkAt, splitAtSeparator, checkThisIndex, renderText, loadTtyRecording;
   rg = /(\[[\t]*read((?:\[[^\]]*\]|[^\[\]])*)\]\([\t]*()<?((?:\([^)]*\)|[^()\s])*?)>?[\t]*((['"])(.*?)\6[\t]*)?\))/;
+  renderTextAt = function(url, cb){
+    var this$ = this;
+    return $.get(url, function(data){
+      renderText(data);
+      if (cb != null) {
+        return cb();
+      }
+    });
+  };
   replaceMarkdownLinkAt = function(text, cb){
     var mt, type, link, this$ = this;
     mt = rg.exec(text);
@@ -44,19 +53,14 @@
     }
     return results$;
   };
-  loadTtyRecording = function(){
+  loadTtyRecording = function(url, id){
     var this$ = this;
-    return $.get('/examples/simple/tty.json', function(data){
+    return $.get(url, function(data){
       playterm_player.data = data;
-      return playterm_player.init('terminal');
+      return playterm_player.init(id);
     });
   };
   window.renderText = renderText;
   window.loadTtyRecording = loadTtyRecording;
-}).call(this);
-(function(){
-  var text;
-  text = '\n<img src="/img/512Px-161.png" />\n\n## It just works\n\nNo dependencies (except for the tools you really need).\nNo need to install any `*-contrib-*` package to use it. \nOnly GNU Make is required.\n\n---\n<img src="/img/512Px-263.png" />\n\n## Choose your style\n\nYou can use declarative style for common tasks and fine-tune your makefile with Javascript code by hooking into the build phases. \n\n---\n\n<img src="/img/512Px-478.png" />\n\n## Free yourself\n\nFrom simple websites to medium complexity webapps, leave **web-make** do the boilerplate work for you by following a rational project organization. \n\n---\n\n## Example\n\nThis Coffeescript program creates a **makefile** for building a single page website written in `jade` with some fancy `coffee` script.\n\nThe `root=true` property specifies that `index.html` should be installed as the root of our website. The `serve=true` property is used by the makefile to setup and start a live preview of your site with `serve`.\n\nThe makefile is printed on standard output.\n\n---\n[read coffeescript](/examples/simple/simple.cs)\n---\n[read makefile](/examples/simple/makefile)\n---\n\n## Installation\n\nYou can either download the project from GitHub or use npm:\n\n```bash\nnpm install wmake\n```\n\n---\n\n## Adding features\n\nIf you need any features that are not in the current version such as:\n\n* Support for new file formats\n* Support for new asset pipeline stages (e.g., minify, compress, zip)\n\njust drop me a message or send me a pull request and I will release a new version of the tool within 1 or 2 days.\n\n\n---';
-  window.renderText(text);
-  window.loadTtyRecording();
+  window.renderTextAt = renderTextAt;
 }).call(this);

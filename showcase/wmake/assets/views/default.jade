@@ -1,0 +1,43 @@
+!!! 5
+
+html(lang='en')
+  head
+    meta(charset='utf-8')
+    meta(http-equiv="X-UA-Compatible", content="IE=edge,chrome=1")
+    meta(name='viewport', content='width=device-width', initial-scale='1.0')
+    meta(name='description', content='')
+    meta(name='author', content='')
+    title(ng-bind-template='{{pageTitle}}')
+    link(rel='stylesheet', href='css/client.css')
+    link(href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,400,600,700' ,rel='stylesheet',type='text/css')
+    //-script(src='http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js')
+    //if lte IE 7
+      script(src='http://cdnjs.cloudflare.com/ajax/libs/json2/20110223/json2.js')
+    //if lte IE 8
+      script(src='//html5shiv.googlecode.com/svn/trunk/html5.js')
+  body
+    
+    //- Begin: Exactly as bootstrap
+    
+
+              
+    block content
+    
+    .container
+        .span8.offset2 
+         hr
+         p (c) 2013 - Vittorio Zaccaria - MIT License
+              //- .footer
+          
+    script(src="js/vendor.js")
+    script(src="js/client.js")
+    script
+            hljs.initHighlightingOnLoad();
+    
+    block post-init
+
+
+
+
+
+
