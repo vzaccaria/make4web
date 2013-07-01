@@ -156,7 +156,6 @@ npm-git-action = (action) ->
     #{echo "The tag will be brought to the master branch and the package will be published on npm."}
     \t git checkout development
     \t npm version #action 
-    \t make npm-commit
     \t make npm-finalize
     """
 
