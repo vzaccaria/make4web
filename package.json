@@ -1,6 +1,6 @@
 {
   "name": "wmake",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Generate makefiles for webapps",
   "main": "index.js",
   "dependencies": {
@@ -12,11 +12,11 @@
     "pushserve": "~0.1.4",
     "uglify-js": "~2.3.6"
   },
-    "repository": {
+  "repository": {
     "type": "git",
     "url": "git@github.com:vzaccaria/make4web.git"
   },
-    "directories": {
+  "directories": {
     "lib": "./lib"
   },
   "devDependencies": {},
