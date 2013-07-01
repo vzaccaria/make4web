@@ -8,8 +8,8 @@ html(lang='en')
     meta(name='description', content='')
     meta(name='author', content='')
     title(ng-bind-template='{{pageTitle}}')
-    link(rel='stylesheet', href='css/client.css')
-    link(href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,400,600,700' ,rel='stylesheet',type='text/css')
+    link(rel='stylesheet', href='css/client.min.css')
+    //- link(href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,400,600,700' ,rel='stylesheet',type='text/css')
     //-script(src='http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js')
     //if lte IE 7
       script(src='http://cdnjs.cloudflare.com/ajax/libs/json2/20110223/json2.js')
@@ -29,8 +29,8 @@ html(lang='en')
          p (c) 2013 - Vittorio Zaccaria - MIT License
               //- .footer
           
-    script(src="js/vendor.js")
-    script(src="js/client.js")
+    script(src="js/vendor.min.js")
+    script(src="js/client.min.js")
 
             
     block post-init

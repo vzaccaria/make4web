@@ -60,7 +60,7 @@ plugins.copy-extension \md, (path-system) ->
   "#{path-system.client-dir}/markdown"
 
 hooks.add-hook 'post-deploy', null, (path-system) ->
-    x "./tools/deploy.coffee -s ./deploy/static -c #{__dirname} -w #{remote-site-path} deploy -v"
+    x "./tools/deploy.coffee -s ./deploy/static -c #{__dirname} -w #{remote-site-path} deploy -v -e"
     
 
 
@@ -85,7 +85,7 @@ files =
                          "./assets/css/final-touches.less" 
                          "./assets/css/ttyrec.less" ]
                          
-        options: { +minify-js }
+        options: { +minify-js, +minify-css }
                      
 simple-make( files )
 

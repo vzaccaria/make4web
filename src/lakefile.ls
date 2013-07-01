@@ -526,11 +526,10 @@ generate-makefile-ext = ( path-system-options, files ) ->
     it 'post deploy files', {with-target: "post-deploy"}, ->
         hooks.execute-hooks("post-deploy")
         m "post deploy done"
-
-    additional-dependencies = 
-        | opt?.minify-js?    => "#build-dir/client.min.js #build-dir/vendor.min.js"
-        | opt?.minify-css?   => "#build-dir/client.min.css"
-        | otherwise => "" 
+        
+    additional-dependencies = ""
+    additional-dependencies = "#build-dir/client.min.js #build-dir/vendor.min.js" unless not opt?.minify-js? 
+    additional-dependencies = "#additional-dependencies #build-dir/client.min.css" unless not opt?.minify-css?
         
     it 'build completed', {with-target: '_build', dependencies: get-targets()+" #additional-dependencies"}, ->
         hooks.execute-hooks("_build")
