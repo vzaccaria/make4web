@@ -10,7 +10,8 @@
     "underscore.string": "~2.3.1",
     "ansi-color": "~0.2.1",
     "pushserve": "~0.1.4",
-    "uglify-js": "~2.3.6"
+    "uglify-js": "~2.3.6",
+    "prelude-ls": "~1.0.0"
   },
   "repository": {
     "type": "git",
