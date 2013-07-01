@@ -11,7 +11,7 @@ prepend content
             li 
               a(href="examples.html") Examples
             li 
-              a(href="api.html") Docs   
+              a(href="api.html")  API
               
     .masthead.jumbotron 
         .container      
@@ -22,8 +22,6 @@ prepend content
 
     //- End: Exactly as bootstrap
 
-    hr
-          
     .container.under-the-jumbotron
         .span12
           .row
@@ -39,31 +37,80 @@ prepend content
               #text3
              .span8
               ul.nav.nav-tabs
-                li.active
+                li
                   a(data-toggle="tab", href="#code") Coffeescript
                 li
                   a(data-toggle="tab", href="#make") Makefile
-                li
+                li.active
                   a(data-toggle="tab", href="#demo") Demo
                   
-              div.tab-content(style="height: 480px;")
-                div.tab-pane.active#code
+              div.tab-content(style="height: 500px;")
+                div.tab-pane#code
                   #text4
                 div.tab-pane#make
                   #text5
-                div.tab-pane#demo
+                div.tab-pane.active#demo
                   .row
-                    .span6#terminal(class="size:80x24")
-                    .span1 
-                        button.btn.btn-small(onclick="playterm_player.togglePlay()") re/start 
- 
-            hr
+                    .offset1.span6.terminal-container
+                        .terminal-window
+                          .terminal-head web-make
+                          #terminal(class="size:80x24")
+
+                        button.btn.btn-small.terminal-button(onclick="playterm_player.togglePlay()")
+                          div
+                            i.icon-play 
+                            i.icon-stop
+          hr 
           .row
-             .span7
-                #text6
-                #text7
-             .span5
-                h3.text-center Supports
+            .span4
+                  #text6
+            .span8
+                  #text7
+          hr 
+          .row
+            .span4
+                  #text8
+            .span8
+                  #text9
+                    
+          hr 
+          //- Options table
+          .row
+            .span4
+              #tbl0
+            .span8
+              table.table.table-bordered
+                thead 
+                  th
+                    #tbl1
+                  th
+                    #tbl2
+                tbody
+                  for i in [0,1,2,3,4,5,6,7]
+                    tr
+                      td
+                        div(id="tbl#{2*i+3}")
+                      td
+                        div(id="tbl#{2*i+4}")
+          hr 
+          .row
+            .span4
+                  #text10
+            .span8
+                  #text11
+          hr 
+          .row
+            .span4
+                  #text12
+            .span8
+                  #text13
+          
+ 
+          hr
+          .row
+            .span4
+                h2 Supports
+            .span8    
                 ul.thumbnails
                     li
                       .span2.thumbnail
@@ -79,12 +126,13 @@ prepend content
                     li
                       .span2.thumbnail
                         img(src="img/logo-jade.jpg") 
+
                 
  prepend post-init
   script
      window.loadTtyRecording('termcasts/simple.tty.json', 'terminal');
-     window.renderTextAt('markdown/README.md')
-                  
+     window.renderTextAt('markdown/README.md', 'text')
+     window.renderTextAt('markdown/options.md', 'tbl')             
 
             
 

@@ -19,7 +19,7 @@
           <ul class="nav pull-right"> 
             <li class="active"> <a href="index.html">Home</a></li>
             <li> <a href="examples.html">Examples</a></li>
-            <li> <a href="api.html">Docs   </a></li>
+            <li> <a href="api.html"> API</a></li>
           </ul>
         </div>
       </div>
@@ -30,7 +30,6 @@
         <p>Generate a plain makefile for your web project </p><a href="github-mac://openRepo/https://github.com/vzaccaria/make4web" class="btn btn-small btn-success">Clone on Github</a>
       </div>
     </div>
-    <hr>
     <div class="container under-the-jumbotron">
       <div class="span12">
         <div class="row">
@@ -51,22 +50,27 @@
           </div>
           <div class="span8">
             <ul class="nav nav-tabs">
-              <li class="active"><a data-toggle="tab" href="#code">Coffeescript</a></li>
+              <li><a data-toggle="tab" href="#code">Coffeescript</a></li>
               <li><a data-toggle="tab" href="#make">Makefile</a></li>
-              <li><a data-toggle="tab" href="#demo">Demo</a></li>
+              <li class="active"><a data-toggle="tab" href="#demo">Demo</a></li>
             </ul>
-            <div style="height: 480px;" class="tab-content">
-              <div id="code" class="tab-pane active">
+            <div style="height: 500px;" class="tab-content">
+              <div id="code" class="tab-pane">
                 <div id="text4"></div>
               </div>
               <div id="make" class="tab-pane">
                 <div id="text5"></div>
               </div>
-              <div id="demo" class="tab-pane">
+              <div id="demo" class="tab-pane active">
                 <div class="row">
-                  <div id="terminal" class="span6 size:80x24"></div>
-                  <div class="span1"> 
-                    <button onclick="playterm_player.togglePlay()" class="btn btn-small">re/start </button>
+                  <div class="offset1 span6 terminal-container">
+                    <div class="terminal-window">
+                      <div class="terminal-head">web-make</div>
+                      <div id="terminal" class="size:80x24"></div>
+                    </div>
+                    <button onclick="playterm_player.togglePlay()" class="btn btn-small terminal-button">
+                      <div><i class="icon-play"> </i><i class="icon-stop"></i></div>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -75,12 +79,130 @@
         </div>
         <hr>
         <div class="row">
-          <div class="span7">
+          <div class="span4">
             <div id="text6"></div>
+          </div>
+          <div class="span8">
             <div id="text7"></div>
           </div>
-          <div class="span5">
-            <h3 class="text-center">Supports</h3>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="span4">
+            <div id="text8"></div>
+          </div>
+          <div class="span8">
+            <div id="text9"></div>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="span4">
+            <div id="tbl0"></div>
+          </div>
+          <div class="span8">
+            <table class="table table-bordered">
+              <thead> 
+                <th>
+                  <div id="tbl1"></div>
+                </th>
+                <th>
+                  <div id="tbl2"></div>
+                </th>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div id="tbl3"></div>
+                  </td>
+                  <td>
+                    <div id="tbl4"></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div id="tbl5"></div>
+                  </td>
+                  <td>
+                    <div id="tbl6"></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div id="tbl7"></div>
+                  </td>
+                  <td>
+                    <div id="tbl8"></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div id="tbl9"></div>
+                  </td>
+                  <td>
+                    <div id="tbl10"></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div id="tbl11"></div>
+                  </td>
+                  <td>
+                    <div id="tbl12"></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div id="tbl13"></div>
+                  </td>
+                  <td>
+                    <div id="tbl14"></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div id="tbl15"></div>
+                  </td>
+                  <td>
+                    <div id="tbl16"></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div id="tbl17"></div>
+                  </td>
+                  <td>
+                    <div id="tbl18"></div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="span4">
+            <div id="text10"></div>
+          </div>
+          <div class="span8">
+            <div id="text11"></div>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="span4">
+            <div id="text12"></div>
+          </div>
+          <div class="span8">
+            <div id="text13"></div>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="span4">
+            <h2>Supports</h2>
+          </div>
+          <div class="span8">   
             <ul class="thumbnails">
               <li>
                 <div class="span2 thumbnail"><img src="img/logo-coffeescript.jpg"></div>
@@ -106,12 +228,12 @@
         </p>
       </div>
     </div>
-    <script src="js/vendor.min.js"></script>
-    <script src="js/client.min.js"></script>
+    <script src="js/vendor.js"></script>
+    <script src="js/client.js"></script>
     <script>
       window.loadTtyRecording('termcasts/simple.tty.json', 'terminal');
-      window.renderTextAt('markdown/README.md')
-      
+      window.renderTextAt('markdown/README.md', 'text')
+      window.renderTextAt('markdown/options.md', 'tbl')             
       
       
       

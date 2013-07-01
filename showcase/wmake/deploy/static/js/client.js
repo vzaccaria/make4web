@@ -1,10 +1,10 @@
 (function(){
-  var rg, renderTextAt, replaceMarkdownLinkAt, splitAtSeparator, checkThisIndex, renderText, loadTtyRecording;
+  var rg, renderTextAt, replaceMarkdownLinkAt, splitAtSeparator, convertIndex, renderText, loadTtyRecording;
   rg = /(\[[\t]*read((?:\[[^\]]*\]|[^\[\]])*)\]\([\t]*()<?((?:\([^)]*\)|[^()\s])*?)>?[\t]*((['"])(.*?)\6[\t]*)?\))/;
-  renderTextAt = function(url, cb){
+  renderTextAt = function(url, suffix, cb){
     var this$ = this;
     return $.get(url, function(data){
-      renderText(data);
+      renderText(data, suffix);
       if (cb != null) {
         return cb();
       }
@@ -29,31 +29,31 @@
   splitAtSeparator = function(text){
     return window._.string.words(text, '---');
   };
-  checkThisIndex = function(converter, index, txt){
+  convertIndex = function(converter, index, txt, suffix){
     return (function(index, txt){
       return replaceMarkdownLinkAt(txt, function(txt, isCode){
         var ht;
         ht = converter.makeHtml(txt);
-        $(ht).appendTo("#text" + index);
-        return $("pre code").each(function(i, e){
-          return hljs.highlightBlock(e, '    ');
-        });
+        $(ht).appendTo("#" + suffix + index);
+        return $("table").attr('class', 'table table-bordered');
       });
     }.call(this, index, txt));
   };
-  renderText = function(text){
+  renderText = function(text, suffix){
     var converter, textBoxes, index, txt, results$ = [];
-    converter = new Showdown.converter();
+    converter = new Showdown.converter({
+      extensions: ['table']
+    });
     textBoxes = splitAtSeparator(text);
     for (index in textBoxes) {
       txt = textBoxes[index];
-      results$.push(checkThisIndex(converter, index, txt));
+      results$.push(convertIndex(converter, index, txt, suffix));
     }
     return results$;
   };
   loadTtyRecording = function(url, id){
     var this$ = this;
-    return $.get(url, function(data){
+    return $.getJSON(url, function(data){
       playterm_player.data = data;
       return playterm_player.init(id);
     });

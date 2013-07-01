@@ -22,6 +22,7 @@ pre-vendor-files = [
     "./assets/components/bootstrap/js/bootstrap-typeahead.js"
     "./assets/components/moment/moment.js"
     "./assets/components/showdown/src/showdown.js"
+    "./assets/components/showdown/src/extensions/table.js"
     "./assets/components/highlightjs/highlight.pack.js"
     "./assets/js/highlight.js/highlight.pack.js" 
     "./assets/components/underscore.string/lib/underscore.string.js"
@@ -37,7 +38,8 @@ css-files         = [ { name: "./assets/components/bootstrap/less/bootstrap.less
 img-files         = [ { files-of-type: \png,  in: "./assets/img/backgrounds"} 
                       { files-of-type: \png,  in: "./assets/img/my-icons"}
                       { files-of-type: \jpg,  in: "./assets/img/carousel"} 
-                      { files-of-type: \png,  in: "./assets/img/carousel"}]
+                      { files-of-type: \png,  in: "./assets/img/carousel"}
+                      { files-of-type: \png,  in: "./assets/components/bootstrap/img"} ]
 
 
 project-name      = "wmake"
@@ -70,15 +72,19 @@ files =
         client-img: img-files,
         
         client-html: [ { name: "./assets/views/index.jade", type: \jade, +root, +serve}
-                       { name: "./assets/views/examples.jade", type: \jade, +root     } ] 
+                       { name: "./assets/views/examples.jade", type: \jade, +root     } 
+                       { name: "./assets/views/api.jade", type: \jade, +root     } ] 
         
         other: [ { name: "./examples/simple/recordings/simple.tty", type: \tty }
-                 { name: "./docs/README.md",        type: \md } 
-                 { name: "./docs/examples.md",      type: \md }]
+                 { name: "./docs/README.md",   type: \md } 
+                 { name: "./docs/examples.md", type: \md }
+                 { name: "./docs/options.md",  type: \md }]
         
         trigger-files: [ "./assets/components/bootstrap/less",
                          "./assets/views/default.jade"
-                         "./assets/css/final-touches.less" ]
+                         "./assets/css/final-touches.less" 
+                         "./assets/css/ttyrec.less" ]
+                         
         options: { +minify-js }
                      
 simple-make( files )

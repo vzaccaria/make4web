@@ -33,9 +33,9 @@ rg =    //
         )
         //
 
-render-text-at = (url, cb) ->
+render-text-at = (url, suffix, cb) ->
     data <~ $.get(url)
-    render-text(data)
+    render-text(data, suffix)
     if cb? then cb()
 
 replace-markdown-link-at = (text, cb) ->
@@ -60,24 +60,27 @@ replace-markdown-link-at = (text, cb) ->
 split-at-separator = (text) ->
     window._.string.words(text, '---')
 
-check-this-index = (converter, index, txt) -> 
+convert-index = (converter, index, txt, suffix) -> 
     # console.log txt
     let index,txt 
         replace-markdown-link-at txt, (txt, is-code) ->
             ht = converter.makeHtml(txt)
             # console.log  "\#text#{index}"
-            $(ht).appendTo("\#text#{index}") 
-            $("pre code").each( (i, e) ->
-                 hljs.highlightBlock(e, '    '))
+            $(ht).appendTo("\##{suffix}#{index}") 
+            
+            # $("pre code").each( (i, e) ->
+            #      hljs.highlightBlock(e, '    '))
+            
+            $("table").attr('class', 'table table-bordered')
    
-render-text = (text) ->
-    converter   = new Showdown.converter()
+render-text = (text, suffix) ->
+    converter   = new Showdown.converter({ extensions: [ 'table' ] })
     text-boxes  = split-at-separator(text)
     for index, txt of text-boxes
-        check-this-index(converter, index, txt)
+        convert-index(converter, index, txt, suffix)
 
 load-tty-recording = (url, id) ->
-    data <~ $.get(url)
+    data <~ $.getJSON(url)
     playterm_player.data = data 
     playterm_player.init id 
     
