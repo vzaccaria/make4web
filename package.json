@@ -16,10 +16,14 @@
     "type": "git",
     "url": "git@github.com:vzaccaria/make4web.git"
   },
+    "directories": {
+    "lib": "./lib"
+  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Vittorio Zaccaria",
-  "license": "BSD"
+  "license": "BSD",
+  "homepage": "www.vittoriozaccaria.net/wmake"
 }
