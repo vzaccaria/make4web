@@ -1,6 +1,6 @@
 {
   "name": "wmake",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Generate makefiles for webapps",
   "main": "index.js",
   "dependencies": {
