@@ -609,6 +609,9 @@ generate-makefile-ext = ( path-system-options, files ) ->
         x "git checkout master"
         x "git merge development"
         x "npm publish ."
+        x "git push"
+        x "git push --tags"
+        x "git checkout development"
 
     it 'cleanup all files in build and deploy', {with-target: "distclean"}, ->
         x "-rm -rf #{build-dir}"
