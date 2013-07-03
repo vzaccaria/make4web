@@ -4,14 +4,14 @@
 ## It just works
 
 No dependencies (except for the tools you really need).
-No need to install any `*-contrib-*` package wwwwto use it. 
+No need to install any `*-contrib-*` package to use it. 
 Only GNU Make is required.
 
 ---
 <img src="img/512Px-204.png" />
-w
+
 ## Choose your style
-www
+
 You can use declarative style for common tasks and fine-tune your makefile with Javascript code by hooking into the build phases. 
 
 ---
@@ -24,7 +24,7 @@ From simple websites to medium complexity webapps, leave **web-make** do the boi
 
 ---
 
-## Examplew
+## Example
 
 This Coffeescript program creates a **makefile** for building a single page website written in `jade` with some fancy `coffee` script.
 
@@ -46,7 +46,7 @@ You can either download the project from GitHub or use npm:
 
 ```bash
 npm install wmake
-```wwww
+```
 
 ---
 

@@ -12,6 +12,7 @@ where `config` is a hash that supports the attributes listed on the right.
 
 ---
 Name
+
 ---
 Description
 
@@ -20,6 +21,7 @@ Description
 
 ---
 clientJs     
+
 ---
 List of files that should be compiled to javascript, e.g.: 
 
@@ -37,6 +39,7 @@ All these files will be concatenated and optionally minified into `client.js`.
 
 ---
 serverJs     
+
 ---
 List of files that should be compiled to javascript and should run server-side with Node, e.g.: 
 
@@ -56,6 +59,7 @@ These files will be stored in the `deploy/server` directory, once compiled. The 
 
 ---
 vendorJs     
+
 ---
 All these files will be concatenated and optionally minified into `vendor.js`.
 
@@ -65,6 +69,7 @@ All these files will be concatenated and optionally minified into `vendor.js`.
 
 ---
 clientCss
+
 ---
 Files that should be compiled to CSS. e.g.: 
 
@@ -77,6 +82,7 @@ clientCss: [
 
 ---
 clientImg
+
 ---
 Image files to be copied in site's `img` directory, e.g.: 
 
@@ -89,6 +95,7 @@ clientImg: [
 
 ---
 clientHtml
+
 ---
 HTML files to be generated (e.g. with `jade`):
 
@@ -139,6 +146,9 @@ options
 
 Options impacting the whole build process.
 
-* `minifyJS`: if `true` invoke `uglifyjs`
-* `minifyCSS`: if `true` invoke `uglifycss`
+* `minifyClientJs`: if `true` invoke `uglifyjs` on `client.js` 
+* `minifyVendorJs`: as above but act on `vendor.js`
+* `minifyCSS`: if `true` invoke `uglifycss` on `client.css`
+* `withGzip`: if `true` invoke `gzip` after `uglify*`
+
 

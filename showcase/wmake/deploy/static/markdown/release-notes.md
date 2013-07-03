@@ -1,4 +1,8 @@
 
+### Release 1.0.3
+
+* Added gzip compression with 'withGzip: true' option
+
 ### Release 1.0.2
 
 * Added automatic release note generation for the project as a new feature (Jul 3, 2013,12:05 PM)
