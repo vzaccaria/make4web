@@ -211,6 +211,9 @@ get-targets = ~>
    
 o = (x) ->
     console.log x
+
+cc = (x) ->
+    o "\# #x"
     
 m = (x) ->
     o echo "└─(#{_.str.humanize(x)}."
@@ -259,9 +262,10 @@ collect-targets = ({build-dir, from-source-list, into-target-variable, into-file
             
            for src in from-source-list 
             
-                    
+                final-type ?= ""
+                
                 if src.name? 
-                    
+                   
                     if custom-type? and custom-type and plugins.translation-pairs[src.type]
                         final-type = plugins.translation-pairs[src.type]
                         
@@ -407,6 +411,7 @@ class translation-plugins
     (@hooks) ->
         @plugins = []
         @translation-pairs = {}
+        @add-default-translations()
         
     output-translation: (s-ext, d-ext, command, path-system) ~~>
        
@@ -442,7 +447,6 @@ class translation-plugins
         augment-plugins(@)
     
     output-translations: (path-system) ~>
-        @add-default-translations()
         for p in @plugins 
             p(path-system)
             
@@ -458,7 +462,7 @@ class translation-plugins
             x "cp -R #subtree/* #{into-dir(path-system)}" 
     
     copy-extension: (ext, into-dir) ~>
-        plugins.add-translation(ext, ext, (source-name, dest-name, depencencies, build-dir) ~> "cp #{source-name} #{dest-name}")
+        @add-translation(ext, ext, (source-name, dest-name, depencencies, build-dir) ~> "cp #{source-name} #{dest-name}")
         @deploy-extension-into(ext, into-dir)
 
 plugins = new translation-plugins(hooks)
