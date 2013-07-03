@@ -60,7 +60,7 @@ plugins.copy-extension \md, (path-system) ->
   "#{path-system.client-dir}/markdown"
 
 hooks.add-hook 'post-deploy', null, (path-system) ->
-    x "./tools/deploy.coffee -s ./deploy/static -c #{__dirname} -w #{remote-site-path} deploy -v -e"
+    x "./tools/deploy.coffee -s ./deploy/static -c #{__dirname} -w #{remote-site-path} deploy -v -e "
     
 
 
@@ -73,12 +73,14 @@ files =
         
         client-html: [ { name: "./assets/views/index.jade", type: \jade, +root, +serve}
                        { name: "./assets/views/examples.jade", type: \jade, +root     } 
-                       { name: "./assets/views/api.jade", type: \jade, +root     } ] 
+                       { name: "./assets/views/api.jade", type: \jade, +root     }  
+                       { name: "./assets/views/release-notes.jade", type: \jade, +root     } ] 
         
         other: [ { name: "./examples/simple/recordings/simple.tty", type: \tty }
                  { name: "./docs/README.md",   type: \md } 
                  { name: "./docs/examples.md", type: \md }
-                 { name: "./docs/options.md",  type: \md }]
+                 { name: "./docs/options.md",  type: \md }
+                 { name: "./docs/release-notes.md",  type: \md }]
         
         trigger-files: [ "./assets/components/bootstrap/less",
                          "./assets/views/default.jade"

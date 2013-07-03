@@ -1,3 +1,4 @@
+#!/usr/bin/env lsc 
 
 require! 'shelljs'
 

@@ -20,17 +20,17 @@ prepend content
 
     .container
       .masthead 
-        p API Coming soon. Just fiddle with the package files for the moment. I still have a day job to do..
-
-    .container
+        p Release Notes
+    
+    .container.under-the-jumbotron
       .span12
         .offset2.span8
-          :markdown
-             In the meantime, you can check out the [release notes page](release-notes.html)
+          #text0
+
          
 prepend post-init
   script
-     window.renderTextAt('markdown/examples.md', 'text')
+     window.renderTextAt('markdown/release-notes.md', 'text')
                   
 
 

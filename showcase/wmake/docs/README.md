@@ -78,8 +78,9 @@ creates a `build` directory to store temporarily processed files and a `deploy` 
 The following targets are supported:
 
 ---
+
 | Target name | Description                                                                                         |
-| ----------- | ----------------------                                                |
+| =========== | =================================================================================================== |
 | `build  `   | Compiles all the project files                                                                      |
 | `deploy `   | (default) installs all the files in the deploy directory                                            |
 | `clean  `   | Cleans up space                                                                                     |
