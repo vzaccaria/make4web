@@ -9,11 +9,14 @@ exports.augment-plugins = (wmake) ->
         wmake.add-translation(\less,   \css,       (source-name, dest-name, depencencies, build-dir)  -> "lessc --verbose #{source-name} > #{dest-name}" )
         wmake.add-translation(\sass,   \css,       (source-name, dest-name, depencencies, build-dir)  -> "sass #{source-name} #{dest-name}" )
         wmake.add-translation(\scss,   \css,       (source-name, dest-name, depencencies, build-dir)  -> "sass --scss #{source-name} #{dest-name}" )
+
        
         # BUILD -> BUILD translations
          
-        wmake.add-build-translation('js',    'min.js',   (source-name, dest-name, depencencies, build-dir)  -> "uglifyjs      #{source-name} > #{dest-name}" )
-        wmake.add-build-translation('css',   'min.css',  (source-name, dest-name, depencencies, build-dir)  -> "uglifycss     #{source-name} > #{dest-name}" )
+        wmake.add-build-translation('js',    'min.js',          (source-name, dest-name, depencencies, build-dir)  -> "uglifyjs  #{source-name} > #{dest-name}" )
+        wmake.add-build-translation('css',   'min.css',         (source-name, dest-name, depencencies, build-dir)  -> "uglifycss #{source-name} > #{dest-name}" )
+        wmake.add-build-translation('js',    'min.js.gz',       (source-name, dest-name, depencencies, build-dir)  -> "uglifyjs  #{source-name} | gzip -c > #{dest-name}" )
+        wmake.add-build-translation('css',   'min.css.gz',      (source-name, dest-name, depencencies, build-dir)  -> "uglifycss #{source-name} | gzip -c > #{dest-name}" )        
         
         for c in [ \js \css ]
             wmake.add-translation(c, c, (source-name, dest-name, depencencies, build-dir) -> "cp #{source-name} #{dest-name}")   

@@ -1,4 +1,11 @@
 
+### Release 1.0.2
+
+* Added automatic release note generation for the project as a new feature (Jul 3, 2013,12:05 PM)
+* Added release note generation as a new feature (Jul 3, 2013,11:09 AM)
+* Changed deploy extension  to use install instead of cp (Jul 3, 2013,9:25 AM)
+* Changed invocation of @add-default-translation to make default translations available at configuration creation (Jul 3, 2013,8:54 AM)
+
 ### Release 1.0.1
 
 * Added automatic copy of svg files into /svg client as a new feature (Jul 2, 2013,7:02 PM)

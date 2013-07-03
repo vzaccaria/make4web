@@ -1,1 +1,1 @@
-/Users/zaccaria/tools/swiss_tool/deploy.coffee
+/Users/zaccaria/short/tools/swiss_tool/deploy.coffee

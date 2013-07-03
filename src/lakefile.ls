@@ -518,10 +518,14 @@ generate-makefile-ext = ( path-system-options, files ) ->
         install-file name: "#{build-dir}/client.css",       derived-from-list: cs, final-directory: "#client-dir/css"
         install-file name: "#{build-dir}/vendor.js",        derived-from-list: vf, final-directory: "#client-dir/js" 
         
-        install-file name: "#{build-dir}/client.min.js",    derived-from-list: cf, final-directory: "#client-dir/js"  if opt?.minify-js?
-        install-file name: "#{build-dir}/vendor.min.js",    derived-from-list: cf, final-directory: "#client-dir/js"  if opt?.minify-js?
+        install-file name: "#{build-dir}/client.min.js",    derived-from-list: cf, final-directory: "#client-dir/js"  if opt?.minify-js? or opt?.minify-client-js?
+        install-file name: "#{build-dir}/vendor.min.js",    derived-from-list: cf, final-directory: "#client-dir/js"  if opt?.minify-js? or opt?.minify-vendor-js?
         install-file name: "#{build-dir}/client.min.css",   derived-from-list: cs, final-directory: "#client-dir/css" if opt?.minify-css?
-        
+
+        install-file name: "#{build-dir}/client.min.js.gz",    derived-from-list: cf, final-directory: "#client-dir/js"  if (opt?.minify-js? or opt?.minify-client-js?) and opt?.with-gzip?
+        install-file name: "#{build-dir}/vendor.min.js.gz",    derived-from-list: cf, final-directory: "#client-dir/js"  if (opt?.minify-js? or opt?.minify-vendor-js?) and opt?.with-gzip?
+        install-file name: "#{build-dir}/client.min.css.gz",   derived-from-list: cs, final-directory: "#client-dir/css" if (opt?.minify-css? and opt?.with-gzip?)
+                
         copy-targets from-source-list: im, copy-into-dir: client-dir-img 
         copy-targets from-source-list: fo, copy-into-dir: client-dir-fonts
         hooks.execute-hooks("_deploy")
@@ -532,8 +536,20 @@ generate-makefile-ext = ( path-system-options, files ) ->
         m "post deploy done"
         
     additional-dependencies = ""
-    additional-dependencies = "#build-dir/client.min.js #build-dir/vendor.min.js" unless not opt?.minify-js? 
-    additional-dependencies = "#additional-dependencies #build-dir/client.min.css" unless not opt?.minify-css?
+    if opt?.minify-js? or opt?.minify-client-js?
+        additional-dependencies = "#build-dir/client.min.js " 
+        if opt?.with-gzip?
+            additional-dependencies = "#additional-dependencies #build-dir/client.min.js.gz "
+        
+    if opt?.minify-js? or opt?.minify-vendor-js?
+        additional-dependencies = "#additional-dependencies #build-dir/vendor.min.js"
+        if opt?.with-gzip?
+            additional-dependencies = "#additional-dependencies #build-dir/vendor.min.js.gz "
+    
+    if opt?.minify-css?    
+        additional-dependencies = "#additional-dependencies #build-dir/client.min.css" 
+        if opt?.with-gzip?
+            additional-dependencies = "#additional-dependencies #build-dir/client.min.css.gz "
         
     it 'build completed', {with-target: '_build', dependencies: get-targets()+" #additional-dependencies"}, ->
         hooks.execute-hooks("_build")
