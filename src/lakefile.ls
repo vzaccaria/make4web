@@ -453,8 +453,9 @@ class translation-plugins
     deploy-extension-into: (ext, into-dir) ~>
         console.log "\# Adding extension for #ext"
         @hooks.add-hook '_deploy', null, (path-system) ~>
-             x "mkdir -p #{into-dir(path-system)}"
-             x "cp #{path-system.build-dir}/*.#{ext} #{into-dir(path-system)}"
+             x "@mkdir -p #{into-dir(path-system)}"
+             foreach-file-in-expression all(files-of-type: ext, in: path-system.build-dir), (file) ->
+                "install -m 555 #{file} #{into-dir(path-system)}"
 
     copy-subtree-into: (subtree, into-dir) ~>
        hooks.add-hook '_deploy', null, (path-system) ->
@@ -630,6 +631,7 @@ generate-makefile-ext = ( path-system-options, files ) ->
  
    
 exports.wMake      = generate-makefile-config-ps
+exports.wmake      = generate-makefile-config-ps
 exports.simpleMake = generate-makefile-config-ps({})
 exports.all        = all 
 exports.plugins    = plugins

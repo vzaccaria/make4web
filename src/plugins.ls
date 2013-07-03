@@ -19,4 +19,4 @@ exports.augment-plugins = (wmake) ->
             wmake.add-translation(c, c, (source-name, dest-name, depencencies, build-dir) -> "cp #{source-name} #{dest-name}")   
        
         # SVGs are stored by default in the /svg 
-        wmake.copy-extension 'svg', (path-system) -> "#{path-system.client-dir}/svg"
+        # wmake.copy-extension 'svg', (path-system) -> "#{path-system.client-dir}/svg"
