@@ -204,7 +204,7 @@ reset-targets = ~>
    @ft = ""
    
 add-to-targets = (x) ~>
-   @ft = "#{@ft} #x"
+   @ft = "#{@ft} #{bt} #x #{ce}\n"
 
 get-targets = ~>
    @ft
@@ -250,7 +250,38 @@ foreach-file-in-expression = (expression, cb) ->
         \t\t #{cb('$$i')}; \\
         \t done 
         """ 
-   
+  
+get-destination-targets = (src, final-type) ->
+    if src.name? 
+        return src.name |> take-name |> change-type(src.type, final-type)
+    else
+        return (all(files-of-type: src.files-of-type, in: src.in) |> change-type( src.files-of-type, final-type) |> take-name)
+
+get-source-dir-of-target = (src) ->
+    if src.name?
+        return src.name |> take-dir
+    else
+        return src.in
+
+
+get-watch-name-of-target = (src) ->
+    if src.name?
+        return src.name
+    else
+        return src.in
+
+
+get-final-type-of-target = (custom-type, final-type, plugins, src) ->
+    if src.name? 
+        if custom-type? and custom-type and plugins.translation-pairs[src.type]
+            return plugins.translation-pairs[src.type]
+            
+    if src.files-of-type?
+        if custom-type? and custom-type and plugins.translation-pairs[src.files-of-type]
+            return plugins.translation-pairs[src.files-of-type]
+            
+    return final-type
+         
 collect-targets = ({build-dir, from-source-list, into-target-variable, into-file, custom-type, final-type, description}) ->
   
        if from-source-list?
@@ -261,29 +292,12 @@ collect-targets = ({build-dir, from-source-list, into-target-variable, into-file
            str = "#{makeify into-target-variable}="
             
            for src in from-source-list 
-            
-                final-type ?= ""
-                
-                if src.name? 
-                   
-                    if custom-type? and custom-type and plugins.translation-pairs[src.type]
-                        final-type = plugins.translation-pairs[src.type]
-                        
-                    src.dst-name    = src.name |> take-name |> change-type(src.type, final-type)
-                    src.watch-name  = src.name 
-                    src.dir-name    = src.name |> take-dir
-                         
-                if src.files-of-type?
-                    
-                    if custom-type? and custom-type and plugins.translation-pairs[src.files-of-type]
-                        final-type = plugins.translation-pairs[src.files-of-type]
-
-                    src.dst-name    = (all(files-of-type: src.files-of-type, in: src.in) |> change-type( src.files-of-type, final-type) |> take-name)
-                    src.watch-name  = (src.in)
-                    src.dir-name    = (src.in)
-                
-                src.build-name  = src.dst-name  |> rebase-to(build-dir)
-                str             = str + ct + src.build-name
+                final-type     = get-final-type-of-target(custom-type, final-type, plugins, src)                   
+                src.watch-name = get-watch-name-of-target(src)                
+                src.dir-name   = get-source-dir-of-target(src)    
+                src.dst-name   = get-destination-targets(src, final-type)  
+                src.build-name = src.dst-name |> rebase-to(build-dir)
+                str            = str + ct + src.build-name
                         
            if not into-file? 
                 add-to-targets(getvar into-target-variable)
@@ -365,8 +379,8 @@ class hooks-data
         @hooks = []
         @big-list-of-files = []
     
-    init-hooks-data: (cf, sf, vf, cs, ch, ot) ~>
-        for l in [ot, ch, cs, cf, sf, vf ]
+    init-hooks-data: (cf, sf, vf, cs, ch, ot, im) ~>
+        for l in [ot, ch, cs, cf, sf, vf, im ]
             @big-list-of-files = @big-list-of-files.concat(l)
     
     add-hook: (phase, predicate, action) ~>
@@ -387,7 +401,7 @@ class hooks-data
         @big-list-of-files |> filter (-> it?.watch-name?) |> map (.watch-name)
    
     get-source-dirs: ~>
-        @big-list-of-files |> filter (-> it?.watch-name?) |> map (.dir-name)
+        @big-list-of-files |> filter (-> it?.dir-name?) |> map (.dir-name)
 
 hooks = new hooks-data()
                     
@@ -412,6 +426,7 @@ class translation-plugins
         @plugins = []
         @translation-pairs = {}
         @add-default-translations()
+        @add-to-vpath = []
         
     output-translation: (s-ext, d-ext, command, path-system) ~~>
        
@@ -465,6 +480,17 @@ class translation-plugins
     copy-extension: (ext, into-dir) ~>
         @add-translation(ext, ext, (source-name, dest-name, depencencies, build-dir) ~> "cp #{source-name} #{dest-name}")
         @deploy-extension-into(ext, into-dir)
+        
+    process-extension: (list, ext, suffix, into-dir, command) ~>
+        @add-translation(ext, "#suffix.#ext", command)
+        @deploy-extension-into("#suffix.#ext", into-dir)
+        for element in list
+            if (element.type? and element.type == ext) or (element.files-of-type? and element.files-of-type == ext)
+                hooks.add-hook 'pre-build', null, 
+                let element 
+                    (path-system) ~> add-to-targets(get-destination-targets(element, "#suffix.#ext") |> rebase-to(path-system.build-dir))
+                @add-to-vpath.push(get-source-dir-of-target(element))
+        
 
 plugins = new translation-plugins(hooks)
 
@@ -484,7 +510,7 @@ generate-makefile-ext = ( path-system-options, files ) ->
         x 'make deploy'   
     
     reset-targets()
-    hooks.init-hooks-data(cf, sf, vf, cs, ch, ot)
+    hooks.init-hooks-data(cf, sf, vf, cs, ch, ot, im)
    
     collect-targets(from-source-list: ot, into-target-variable: "other",                build-dir: build-dir,  custom-type: true)
     collect-targets(from-source-list: ch, into-target-variable: "client html",          build-dir: build-dir,  final-type: \html)
@@ -492,7 +518,17 @@ generate-makefile-ext = ( path-system-options, files ) ->
     collect-targets(from-source-list: cf, into-target-variable: "client sources",       build-dir: build-dir,  final-type: \js,   into-file:       "#build-dir/client.js" )
     collect-targets(from-source-list: sf, into-target-variable: "server sources",       build-dir: build-dir,  final-type: \js)
     collect-targets(from-source-list: vf, into-target-variable: "vendor client sources",build-dir: build-dir,  final-type: \js,   into-file:       "#build-dir/vendor.js")
-    
+
+    if opt?.optimize-img? and im?
+        
+        plugins.process-extension(im, \jpg, "thumb", ((path-system) -> path-system.client-dir-img), 
+            (source-name, dest-name, depencencies, build-dir)  -> "convert -thumbnail 150 #{source-name} #{dest-name}")
+            
+        plugins.process-extension(im, \jpg, "medium", ((path-system) -> path-system.client-dir-img),
+            (source-name, dest-name, depencencies, build-dir)  -> "convert #{source-name} -resize 500 #{dest-name}")
+            
+        plugins.process-extension(im, \png, "min", ((path-system) -> path-system.client-dir-img),
+            (source-name, dest-name, depencencies, build-dir)  -> "optipng #{source-name} -out #{dest-name}"    )    
   
     it 'create temporary directories', {with-target: "pre-build"}, ->
         x "@mkdir -p #build-dir"
@@ -509,6 +545,8 @@ generate-makefile-ext = ( path-system-options, files ) ->
         x "@mkdir -p #client-dir-fonts"  unless not fo?
         x "@mkdir -p #client-dir/html"   unless not ch?
         hooks.execute-hooks("pre-deploy")
+    
+
 
     it 'deploy files', {with-target: "_deploy"}, ->
         foreach-file-in("server sources",   (file) -> "install -m 555 #file #{server-dir}") unless not sf?
@@ -550,13 +588,14 @@ generate-makefile-ext = ( path-system-options, files ) ->
         additional-dependencies = "#additional-dependencies #build-dir/client.min.css" 
         if opt?.with-gzip?
             additional-dependencies = "#additional-dependencies #build-dir/client.min.css.gz "
+            
+
         
     it 'build completed', {with-target: '_build', dependencies: get-targets()+" #additional-dependencies"}, ->
         hooks.execute-hooks("_build")
         m "build completed"
 
 
-    assets-targets ="#{getvar('client img') unless not im?} #{getvar('client fonts') unless not im?} "
    
     task with-name: "deploy",  step-list: ["pre-deploy", "build", "_deploy", "post-deploy"]
     task with-name: "build",   step-list: ["pre-build", "_build"]
@@ -565,6 +604,9 @@ generate-makefile-ext = ( path-system-options, files ) ->
     o "VPATH = #{ce}"
     
     for path in hooks.get-source-dirs() 
+        o "#bt #path #ce"
+        
+    for path in plugins.add-to-vpath
         o "#bt #path #ce"
        
     it 'start continuous build', {with-target: \server}, ->
