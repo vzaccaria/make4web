@@ -1,4 +1,4 @@
-# Makefile generated automatically on July 3rd 2013, 11:23:27 am
+# Makefile generated automatically on July 8th 2013, 5:52:03 pm
 # (c) 2013 - Vittorio Zaccaria, all rights reserved
 
 # Current configuration: 
@@ -49,7 +49,8 @@ post-deploy:
 
 # Build completed
 .PHONY: _build
-_build:  $(SERVER_SOURCES) 
+_build:  	 $(SERVER_SOURCES)  \
+ 
 	 @echo ' [34m└─(build completed.[0m' 1>&2
 	 @echo ' [34m[0m' 1>&2
 
@@ -123,11 +124,19 @@ test:
 
 # Converting from js to min.js
 ./build/%.min.js: ./build/%.js
-	 uglifyjs      $< > $@
+	 uglifyjs  $< > $@
 
 # Converting from css to min.css
 ./build/%.min.css: ./build/%.css
-	 uglifycss     $< > $@
+	 uglifycss $< > $@
+
+# Converting from js to min.js.gz
+./build/%.min.js.gz: ./build/%.js
+	 uglifyjs  $< | gzip -c > $@
+
+# Converting from css to min.css.gz
+./build/%.min.css.gz: ./build/%.css
+	 uglifycss $< | gzip -c > $@
 
 # Converting from js to js
 ./build/%.js: %.js
