@@ -150,5 +150,6 @@ Options impacting the whole build process.
 * `minifyVendorJs`: as above but act on `vendor.js`
 * `minifyCSS`: if `true` invoke `uglifycss` on `client.css`
 * `withGzip`: if `true` invoke `gzip` after `uglify*`
+* `optimizeImg`: invoke `optipng` and `imagemagick` to optimize `png` files (lossless) and `jpg` files. jpeg files are processed to create a 150px thumbnail and a medium version of the image.
 
 
