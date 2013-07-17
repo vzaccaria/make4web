@@ -1,7 +1,7 @@
 
 exports.augment-plugins = (wmake) ->
    
-        # SRC -> BUILD translations 
+        # SRC -> BUILD translations used for all the common targets
         wmake.add-translation(\ls,     \js,        (source-name, dest-name, depencencies, build-dir)  -> "lsc --output #{build-dir} -c #{source-name}")      
         wmake.add-translation(\coffee, \js,        (source-name, dest-name, depencencies, build-dir)  -> "coffee -b --output #{build-dir} #{source-name}")      
         wmake.add-translation(\jade,   \html,      (source-name, dest-name, depencencies, build-dir)  -> "@jade -P --out #{build-dir} #{source-name}")      
@@ -11,8 +11,7 @@ exports.augment-plugins = (wmake) ->
         wmake.add-translation(\scss,   \css,       (source-name, dest-name, depencencies, build-dir)  -> "sass --scss #{source-name} #{dest-name}" )
 
        
-        # BUILD -> BUILD translations
-         
+        # BUILD -> BUILD translations used to build minified js. Modify the options here.
         wmake.add-build-translation('js',    'min.js',          (source-name, dest-name, depencencies, build-dir)  -> "uglifyjs  #{source-name} > #{dest-name}" )
         wmake.add-build-translation('css',   'min.css',         (source-name, dest-name, depencencies, build-dir)  -> "uglifycss #{source-name} > #{dest-name}" )
         wmake.add-build-translation('js',    'min.js.gz',       (source-name, dest-name, depencencies, build-dir)  -> "uglifyjs  #{source-name} | gzip -c > #{dest-name}" )
@@ -21,5 +20,3 @@ exports.augment-plugins = (wmake) ->
         for c in [ \js \css ]
             wmake.add-translation(c, c, (source-name, dest-name, depencencies, build-dir) -> "cp #{source-name} #{dest-name}")   
        
-        # SVGs are stored by default in the /svg 
-        # wmake.copy-extension 'svg', (path-system) -> "#{path-system.client-dir}/svg"

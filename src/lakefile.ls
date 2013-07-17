@@ -539,7 +539,7 @@ generate-makefile-ext = ( path-system-options, files ) ->
         x "@mkdir -p #deploy-dir" 
         x "@mkdir -p #server-dir"        unless not sf?
         x "@mkdir -p #client-dir"        unless not cf? and not cs? and not im? and not fo? and not ch?
-        x "@mkdir -p #client-dir/js"     unless not cf?
+        x "@mkdir -p #client-dir/js"     unless (not cf? and not vf?)
         x "@mkdir -p #client-dir/css"    unless not cs?
         x "@mkdir -p #client-dir-img"    unless not im?
         x "@mkdir -p #client-dir-fonts"  unless not fo?
