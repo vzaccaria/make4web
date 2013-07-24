@@ -17,6 +17,6 @@ exports.augment-plugins = (wmake) ->
         wmake.add-build-translation('js',    'min.js.gz',       (source-name, dest-name, depencencies, build-dir)  -> "uglifyjs  #{source-name} | gzip -c > #{dest-name}" )
         wmake.add-build-translation('css',   'min.css.gz',      (source-name, dest-name, depencencies, build-dir)  -> "uglifycss #{source-name} | gzip -c > #{dest-name}" )        
         
-        for c in [ \js \css ]
+        for c in [ \js \css \html ]
             wmake.add-translation(c, c, (source-name, dest-name, depencencies, build-dir) -> "cp #{source-name} #{dest-name}")   
        

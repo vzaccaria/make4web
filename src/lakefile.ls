@@ -557,11 +557,11 @@ generate-makefile-ext = ( path-system-options, files ) ->
         install-file name: "#{build-dir}/vendor.js",        derived-from-list: vf, final-directory: "#client-dir/js" 
         
         install-file name: "#{build-dir}/client.min.js",    derived-from-list: cf, final-directory: "#client-dir/js"  if opt?.minify-js? or opt?.minify-client-js?
-        install-file name: "#{build-dir}/vendor.min.js",    derived-from-list: cf, final-directory: "#client-dir/js"  if opt?.minify-js? or opt?.minify-vendor-js?
+        install-file name: "#{build-dir}/vendor.min.js",    derived-from-list: vf, final-directory: "#client-dir/js"  if opt?.minify-js? or opt?.minify-vendor-js?
         install-file name: "#{build-dir}/client.min.css",   derived-from-list: cs, final-directory: "#client-dir/css" if opt?.minify-css?
 
         install-file name: "#{build-dir}/client.min.js.gz",    derived-from-list: cf, final-directory: "#client-dir/js"  if (opt?.minify-js? or opt?.minify-client-js?) and opt?.with-gzip?
-        install-file name: "#{build-dir}/vendor.min.js.gz",    derived-from-list: cf, final-directory: "#client-dir/js"  if (opt?.minify-js? or opt?.minify-vendor-js?) and opt?.with-gzip?
+        install-file name: "#{build-dir}/vendor.min.js.gz",    derived-from-list: vf, final-directory: "#client-dir/js"  if (opt?.minify-js? or opt?.minify-vendor-js?) and opt?.with-gzip?
         install-file name: "#{build-dir}/client.min.css.gz",   derived-from-list: cs, final-directory: "#client-dir/css" if (opt?.minify-css? and opt?.with-gzip?)
                 
         copy-targets from-source-list: im, copy-into-dir: client-dir-img 
